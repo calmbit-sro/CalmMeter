@@ -9,7 +9,7 @@ optionally a per-model breakdown and spend. No more opening a terminal to check.
 
 A [CalmBit](https://calmbit.cz) app.
 
-![menu bar item: a coloured dot + percentage, with a dropdown showing 5h and weekly bars]
+![CalmMeter — a coloured dot and percentage in the menu bar, with a dropdown showing 5h and weekly usage](docs/hero.png)
 
 ## Requirements
 
@@ -99,6 +99,25 @@ Notes:
   (default `com.calmbit.CalmMeter`).
 - Without a Developer ID the script falls back to an **ad-hoc** signature — that
   DMG runs only on the Mac that built it.
+
+### Automated releases (GitHub Actions)
+
+`.github/workflows/release.yml` builds, signs, notarizes, and attaches
+`CalmMeter.dmg` to the GitHub release whenever you push a `v*` tag:
+
+```bash
+git tag v1.1.0 && git push origin v1.1.0
+```
+
+It needs these repository secrets (Settings → Secrets and variables → Actions):
+
+| Secret | What |
+|---|---|
+| `MACOS_CERT_P12_BASE64` | base64 of your Developer ID Application `.p12` (`base64 -i cert.p12 \| pbcopy`) |
+| `MACOS_CERT_PASSWORD` | password set when exporting the `.p12` |
+| `NOTARY_APPLE_ID` | Apple ID email for notarization |
+| `NOTARY_TEAM_ID` | Developer Team ID |
+| `NOTARY_PASSWORD` | app-specific password |
 
 ## The app icon
 

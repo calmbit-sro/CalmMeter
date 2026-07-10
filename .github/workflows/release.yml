@@ -1,0 +1,62 @@
+name: Release
+
+# Tag a version (e.g. `git tag v1.1.0 && git push --tags`) to build, sign,
+# notarize, and attach CalmMeter.dmg to the GitHub release for that tag.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   MACOS_CERT_P12_BASE64  base64 of your "Developer ID Application" .p12
+#                          (export from Keychain Access, then: base64 -i cert.p12 | pbcopy)
+#   MACOS_CERT_PASSWORD    the password you set when exporting the .p12
+#   NOTARY_APPLE_ID        Apple ID email used for notarization
+#   NOTARY_TEAM_ID         Developer Team ID (e.g. Z6YWGVCB3Q)
+#   NOTARY_PASSWORD        app-specific password (account.apple.com → Sign-In & Security)
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Import Developer ID certificate
+        env:
+          CERT_B64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          CERT_PW: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          KP="ci-keychain-$RANDOM"
+          security create-keychain -p "$KP" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KP" "$KEYCHAIN"
+          echo "$CERT_B64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$CERT_PW" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KP" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain-db
+          rm -f "$RUNNER_TEMP/cert.p12"
+
+      - name: Store notarization credentials
+        env:
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+        run: |
+          xcrun notarytool store-credentials ci \
+            --apple-id "$NOTARY_APPLE_ID" \
+            --team-id "$NOTARY_TEAM_ID" \
+            --password "$NOTARY_PASSWORD"
+
+      - name: Build, sign and notarize DMG
+        run: ./scripts/make-dmg.sh --notarize ci
+
+      - name: Attach DMG to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: CalmMeter.dmg
+          generate_release_notes: true
