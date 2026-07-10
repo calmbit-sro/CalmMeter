@@ -2,6 +2,7 @@ import Foundation
 
 public enum UsageClientError: Error, LocalizedError, Equatable {
     case unauthorized
+    case rateLimited(retryAfter: Int?)
     case http(Int)
     case offline
     case decoding(String)
@@ -10,6 +11,8 @@ public enum UsageClientError: Error, LocalizedError, Equatable {
         switch self {
         case .unauthorized:
             return "Přihlášení vypršelo — spusť `claude` a přihlaš se znovu."
+        case .rateLimited:
+            return "Příliš mnoho požadavků — zkusím to znovu za chvíli."
         case .http(let code):
             return "Server vrátil chybu (HTTP \(code))."
         case .offline:
@@ -17,6 +20,12 @@ public enum UsageClientError: Error, LocalizedError, Equatable {
         case .decoding(let detail):
             return "Nečekaná odpověď serveru: \(detail)"
         }
+    }
+
+    /// Suggested seconds to wait before retrying, when the server told us.
+    public var retryAfter: Int? {
+        if case .rateLimited(let seconds) = self { return seconds }
+        return nil
     }
 }
 
@@ -60,10 +69,17 @@ public struct UsageClient {
         switch http.statusCode {
         case 200: break
         case 401, 403: throw UsageClientError.unauthorized
+        case 429: throw UsageClientError.rateLimited(retryAfter: Self.retryAfterSeconds(http))
         default: throw UsageClientError.http(http.statusCode)
         }
 
         return try Self.decode(data)
+    }
+
+    /// Parses a `Retry-After` header (seconds form) if present.
+    static func retryAfterSeconds(_ http: HTTPURLResponse) -> Int? {
+        guard let raw = http.value(forHTTPHeaderField: "Retry-After") else { return nil }
+        return Int(raw.trimmingCharacters(in: .whitespaces))
     }
 
     /// Decoding split out for unit testing against fixtures.

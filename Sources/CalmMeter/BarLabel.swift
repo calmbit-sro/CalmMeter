@@ -37,8 +37,16 @@ struct BarLabel: View {
         }
     }
 
+    // NOTE: MenuBarExtra only reliably renders Text and Image (SF Symbols) in
+    // its label — a raw SwiftUI Shape like Circle() silently doesn't draw. Use
+    // the "circle.fill" symbol so the status dot actually appears (and keeps its
+    // severity colour via foregroundStyle).
     private var dot: some View {
-        Circle().fill(dotColor).frame(width: 8, height: 8)
+        Image(systemName: "circle.fill")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 7, height: 7)
+            .foregroundStyle(dotColor)
     }
 
     private func pct(_ value: Double?) -> String {
