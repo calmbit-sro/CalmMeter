@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates Resources/AppIcon.icns for ClaudeUsage.
+"""Generates Resources/AppIcon.icns for CalmMeter.
 
 Design: a macOS-style rounded "squircle" with a warm Claude-coral gradient,
 a circular usage gauge (donut with a partial fill + rounded knob), and a small

@@ -1,5 +1,5 @@
 import XCTest
-@testable import ClaudeUsageCore
+@testable import CalmMeterCore
 
 final class UsageDecodeTests: XCTestCase {
     private func fixtureData() throws -> Data {

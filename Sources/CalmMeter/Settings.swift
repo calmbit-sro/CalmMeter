@@ -1,5 +1,5 @@
 import SwiftUI
-import ClaudeUsageCore
+import CalmMeterCore
 
 /// What the compact menu-bar item renders.
 enum BarDisplayMode: String, CaseIterable, Identifiable {

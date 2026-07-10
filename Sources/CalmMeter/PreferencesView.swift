@@ -1,5 +1,5 @@
 import SwiftUI
-import ClaudeUsageCore
+import CalmMeterCore
 
 struct PreferencesView: View {
     @EnvironmentObject var store: UsageStore

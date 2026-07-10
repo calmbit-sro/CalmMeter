@@ -1,5 +1,5 @@
 import SwiftUI
-import ClaudeUsageCore
+import CalmMeterCore
 
 /// A labelled utilization bar (used for 5h, 7d and per-model rows).
 struct UsageBar: View {

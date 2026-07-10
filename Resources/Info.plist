@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>ClaudeUsage</string>
+    <string>CalmMeter</string>
     <key>CFBundleDisplayName</key>
-    <string>Claude Usage</string>
+    <string>CalmMeter</string>
     <key>CFBundleIdentifier</key>
-    <string>cz.petrhlozek.ClaudeUsage</string>
+    <string>com.calmbit.CalmMeter</string>
     <key>CFBundleExecutable</key>
-    <string>ClaudeUsage</string>
+    <string>CalmMeter</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleIconName</key>
@@ -27,6 +27,6 @@
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
     <key>NSHumanReadableCopyright</key>
-    <string>Personal tool. Uses the local Claude Code OAuth token to read your own usage.</string>
+    <string>© CalmBit s.r.o. Uses the local Claude Code OAuth token to read your own usage.</string>
 </dict>
 </plist>

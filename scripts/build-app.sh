@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds ClaudeUsage.app from the SwiftPM release binary.
+# Builds CalmMeter.app from the SwiftPM release binary.
 # Usage: scripts/build-app.sh [--install]
 #   --install  also copy the app into /Applications
 set -euo pipefail
@@ -7,7 +7,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-APP_NAME="ClaudeUsage"
+APP_NAME="CalmMeter"
 APP="$ROOT/$APP_NAME.app"
 
 echo "› swift build -c release"
@@ -33,7 +33,7 @@ fi
 # Ad-hoc signature: required for SMAppService (launch-at-login) to register,
 # and keeps the keychain ACL stable across rebuilds of the same path.
 echo "› codesign (ad-hoc)"
-codesign --force --sign - --identifier cz.petrhlozek.ClaudeUsage "$APP" >/dev/null 2>&1 || \
+codesign --force --sign - --identifier com.calmbit.CalmMeter "$APP" >/dev/null 2>&1 || \
     echo "  (codesign skipped/failed — app still runs, login-item may need manual toggle)"
 
 echo "✓ built $APP"

@@ -1,16 +1,20 @@
-# ClaudeUsage
+# CalmMeter
 
-A tiny macOS **menu-bar app** that keeps your current **Claude usage** in the menu
-bar — the same data as Claude Code's `/usage` command: how much of your **5-hour**
-and **weekly** rate-limit windows you've used, when they reset, and optionally a
-per-model breakdown and spend.
+*A calm read on how much Claude Code you have left — right in your menu bar.*
+
+CalmMeter is a tiny macOS **menu-bar app** that keeps your current **Claude Code
+usage** in view — the same data as the `/usage` command: how much of your
+**5-hour** and **weekly** rate-limit windows you've used, when they reset, and
+optionally a per-model breakdown and spend. No more opening a terminal to check.
+
+A [CalmBit](https://calmbit.cz) app.
 
 ![menu bar item: a coloured dot + percentage, with a dropdown showing 5h and weekly bars]
 
 ## Requirements
 
 - **macOS 13** (Ventura) or newer.
-- **Claude Code** installed and logged in on this Mac. The app reads the OAuth
+- **Claude Code** installed and logged in on this Mac. CalmMeter reads the OAuth
   token Claude Code stores in your login keychain — if you've never signed in,
   run `claude` once first.
 - To **build from source:** the Swift toolchain (Xcode or the Command Line Tools —
@@ -20,8 +24,8 @@ per-model breakdown and spend.
 
 ### Option A — download the DMG (easiest)
 
-1. Grab `ClaudeUsage.dmg` from the [Releases](../../releases) page.
-2. Open it and drag **Claude Usage** to **Applications**.
+1. Grab `CalmMeter.dmg` from the [Releases](../../releases) page.
+2. Open it and drag **CalmMeter** to **Applications**.
 3. Launch it from Applications. If macOS warns it's from an unidentified
    developer, right-click the app → **Open** → **Open** (only needed once, and
    not at all if the DMG was notarized).
@@ -29,10 +33,10 @@ per-model breakdown and spend.
 ### Option B — build from source
 
 ```bash
-git clone <this-repo> && cd claude-usage
+git clone <this-repo> && cd calmmeter
 swift test               # optional: run the unit tests
-./scripts/build-app.sh   # produces ./ClaudeUsage.app
-open ./ClaudeUsage.app
+./scripts/build-app.sh   # produces ./CalmMeter.app
+open ./CalmMeter.app
 
 # or install into /Applications:
 ./scripts/build-app.sh --install
@@ -41,7 +45,7 @@ open ./ClaudeUsage.app
 ### First launch — keychain prompt
 
 The first time it runs, macOS shows a keychain dialog asking for access to
-**`Claude Code-credentials`**. Click **Always Allow**. (The app has a different
+**`Claude Code-credentials`**. Click **Always Allow**. (CalmMeter has a different
 code signature than Claude Code, so macOS asks once.)
 
 Nothing is sent anywhere except a request to the Anthropic API asking for *your
@@ -79,18 +83,25 @@ Apple **Developer ID** so it runs on other Macs.
 Apple ID credentials once, then pass the profile name:
 
 ```bash
-xcrun notarytool store-credentials claude-usage \
+xcrun notarytool store-credentials calmmeter \
   --apple-id you@example.com --team-id TEAMID --password <app-specific-password>
 
 ./scripts/make-dmg.sh --sign "Developer ID Application: Your Name (TEAMID)" \
-                      --notarize claude-usage
+                      --notarize calmmeter
 ```
 
 Notes:
 - App-specific password: create one at <https://account.apple.com> → Sign-In & Security.
-- Change the bundle id with `--identifier your.bundle.id` if you like.
+- Change the bundle id with `--identifier your.bundle.id` if you like
+  (default `com.calmbit.CalmMeter`).
 - Without a Developer ID the script falls back to an **ad-hoc** signature — that
   DMG runs only on the Mac that built it.
+
+## The app icon
+
+`scripts/make-icon.py` renders the icon (a warm coral squircle with a usage-gauge
+ring and a centre sunburst) at 1024px and builds `Resources/AppIcon.icns`. Tweak
+the colours / fill in that script and re-run it to regenerate.
 
 ## How it works
 
@@ -101,13 +112,19 @@ Notes:
 
 ## Project layout
 
-- `Sources/ClaudeUsageCore/` — models, API client, keychain, polling store (unit-tested)
-- `Sources/ClaudeUsage/` — the SwiftUI menu-bar app (`MenuBarExtra`)
-- `Tests/ClaudeUsageCoreTests/` — unit tests + a sample API response fixture
-- `scripts/build-app.sh` — assemble `ClaudeUsage.app`
+- `Sources/CalmMeterCore/` — models, API client, keychain, polling store (unit-tested)
+- `Sources/CalmMeter/` — the SwiftUI menu-bar app (`MenuBarExtra`)
+- `Tests/CalmMeterCoreTests/` — unit tests + a sample API response fixture
+- `scripts/build-app.sh` — assemble `CalmMeter.app`
 - `scripts/make-dmg.sh` — build a signed (and optionally notarized) DMG
+- `scripts/make-icon.py` — regenerate the app icon
 
 ## Uninstall
 
-Quit the app, delete `ClaudeUsage.app`, and remove it from **System Settings →
+Quit the app, delete `CalmMeter.app`, and remove it from **System Settings →
 General → Login Items** if you enabled launch-at-login.
+
+---
+
+CalmMeter is an independent tool and is not affiliated with or endorsed by Anthropic.
+"Claude" and "Claude Code" are trademarks of Anthropic.

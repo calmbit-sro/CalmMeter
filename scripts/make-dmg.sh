@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds a distributable, signed ClaudeUsage.dmg.
+# Builds a distributable, signed CalmMeter.dmg.
 #
 # Usage:
 #   scripts/make-dmg.sh [--sign "Developer ID Application: NAME (TEAMID)"] \
@@ -22,13 +22,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-APP_NAME="ClaudeUsage"
-VOL_NAME="Claude Usage"
+APP_NAME="CalmMeter"
+VOL_NAME="CalmMeter"
 APP="$ROOT/$APP_NAME.app"
 DMG="$ROOT/$APP_NAME.dmg"
 IDENTITY="${SIGN_IDENTITY:-}"
 NOTARY_PROFILE=""
-BUNDLE_ID="cz.petrhlozek.ClaudeUsage"
+BUNDLE_ID="com.calmbit.CalmMeter"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in

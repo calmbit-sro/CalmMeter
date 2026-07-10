@@ -2,7 +2,7 @@
 /.build/
 /build/
 *.app/
-ClaudeUsage.app/
+CalmMeter.app/
 *.dmg
 .swiftpm/
 xcuserdata/

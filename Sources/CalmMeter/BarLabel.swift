@@ -1,5 +1,5 @@
 import SwiftUI
-import ClaudeUsageCore
+import CalmMeterCore
 
 /// The compact view shown in the menu bar. Pure function of usage + settings.
 struct BarLabel: View {

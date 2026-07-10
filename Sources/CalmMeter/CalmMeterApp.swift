@@ -1,5 +1,5 @@
 import SwiftUI
-import ClaudeUsageCore
+import CalmMeterCore
 
 /// Single shared store so both the SwiftUI scenes and the AppDelegate reference
 /// the same polling state.
@@ -23,7 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 @main
-struct ClaudeUsageApp: App {
+struct CalmMeterApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var store = AppEnvironment.store
     @AppStorage(SettingsKey.barDisplayMode) private var barModeRaw = BarDisplayMode.dotAndFiveHour.rawValue

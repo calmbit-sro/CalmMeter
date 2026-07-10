@@ -2,22 +2,22 @@
 import PackageDescription
 
 let package = Package(
-    name: "ClaudeUsage",
+    name: "CalmMeter",
     platforms: [.macOS(.v13)],
     targets: [
         // Pure logic: models, API client, keychain, polling store.
         // Kept separate from the app target so it can be unit-tested.
         .target(
-            name: "ClaudeUsageCore"
+            name: "CalmMeterCore"
         ),
         // The SwiftUI menu-bar app. Thin; depends on Core.
         .executableTarget(
-            name: "ClaudeUsage",
-            dependencies: ["ClaudeUsageCore"]
+            name: "CalmMeter",
+            dependencies: ["CalmMeterCore"]
         ),
         .testTarget(
-            name: "ClaudeUsageCoreTests",
-            dependencies: ["ClaudeUsageCore"],
+            name: "CalmMeterCoreTests",
+            dependencies: ["CalmMeterCore"],
             resources: [.copy("Fixtures")]
         ),
     ]
