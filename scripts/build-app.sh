@@ -30,10 +30,23 @@ else
     echo "  (no AppIcon.icns — run scripts/make-icon.py to generate it)"
 fi
 
-# Ad-hoc signature: required for SMAppService (launch-at-login) to register,
-# and keeps the keychain ACL stable across rebuilds of the same path.
-echo "› codesign (ad-hoc)"
-codesign --force --sign - --identifier com.calmbit.CalmMeter "$APP" >/dev/null 2>&1 || \
+# Sign with a stable identity. A Developer ID (if present) gives the app a
+# stable designated requirement, so the keychain "Always Allow" grant sticks and
+# macOS stops re-prompting on every launch. Ad-hoc signatures aren't trusted the
+# same way and cause repeated keychain password prompts — hence we prefer a real
+# identity here, matching what make-dmg.sh does. Override with $SIGN_IDENTITY.
+IDENTITY="${SIGN_IDENTITY:-}"
+if [[ -z "$IDENTITY" ]]; then
+    IDENTITY="$(security find-identity -v -p codesigning 2>/dev/null \
+                | grep 'Developer ID Application' | head -1 | sed -E 's/.*"(.*)".*/\1/')"
+fi
+if [[ -z "$IDENTITY" ]]; then
+    IDENTITY="-"
+    echo "› codesign (ad-hoc — no Developer ID found; macOS may re-prompt for keychain access)"
+else
+    echo "› codesign ($IDENTITY)"
+fi
+codesign --force --sign "$IDENTITY" --identifier com.calmbit.CalmMeter "$APP" >/dev/null 2>&1 || \
     echo "  (codesign skipped/failed — app still runs, login-item may need manual toggle)"
 
 echo "✓ built $APP"

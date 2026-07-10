@@ -36,18 +36,35 @@ public struct UsageClient {
     private static let betaHeader = "oauth-2025-04-20"
 
     private let session: URLSession
-    private let credentialsProvider: () throws -> ClaudeCredentials
+    private let provider: CredentialProviding
 
     public init(
         session: URLSession = .shared,
-        credentialsProvider: @escaping () throws -> ClaudeCredentials = Keychain.readCredentials
+        provider: CredentialProviding = CachedCredentialProvider()
     ) {
         self.session = session
-        self.credentialsProvider = credentialsProvider
+        self.provider = provider
+    }
+
+    /// Convenience for tests: build a client from a plain closure token source.
+    public init(session: URLSession = .shared,
+                credentialsProvider: @escaping () throws -> ClaudeCredentials) {
+        self.session = session
+        self.provider = AnyCredentialProvider { _ in try credentialsProvider() }
     }
 
     public func fetch() async throws -> Usage {
-        let creds = try credentialsProvider()
+        // Use the cached token; if it's been rejected, re-read Claude Code's
+        // keychain item once (this is the only path that may prompt) and retry.
+        do {
+            return try await attempt(forceRefresh: false)
+        } catch UsageClientError.unauthorized {
+            return try await attempt(forceRefresh: true)
+        }
+    }
+
+    private func attempt(forceRefresh: Bool) async throws -> Usage {
+        let creds = try provider.credentials(forceRefresh: forceRefresh)
 
         var request = URLRequest(url: Self.endpoint)
         request.httpMethod = "GET"

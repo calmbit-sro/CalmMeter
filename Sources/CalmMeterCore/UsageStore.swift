@@ -20,6 +20,7 @@ public final class UsageStore: ObservableObject {
     private var interval: TimeInterval
     private var timer: Timer?
     private var consecutiveFailures = 0
+    private var started = false
 
     /// Backoff ceiling — never wait longer than this between attempts.
     private let maxBackoff: TimeInterval = 15 * 60
@@ -29,7 +30,11 @@ public final class UsageStore: ObservableObject {
         self.interval = interval
     }
 
+    /// Idempotent: safe to call more than once — only the first call starts the
+    /// poll loop, so we never end up with two concurrent loops double-polling.
     public func start() {
+        guard !started else { return }
+        started = true
         Task { await refreshNow() }
     }
 

@@ -44,9 +44,12 @@ open ./CalmMeter.app
 
 ### First launch — keychain prompt
 
-The first time it runs, macOS shows a keychain dialog asking for access to
-**`Claude Code-credentials`**. Click **Always Allow**. (CalmMeter has a different
-code signature than Claude Code, so macOS asks once.)
+The first time it runs, macOS may show a keychain dialog asking for access to
+**`Claude Code-credentials`**. Click **Allow**. CalmMeter then copies the token
+into its **own** keychain item (`com.calmbit.CalmMeter.credentials`) and reads
+from there afterwards, so it won't keep prompting on every launch — it only goes
+back to Claude Code's item when the token stops working (roughly once per token
+rotation).
 
 Nothing is sent anywhere except a request to the Anthropic API asking for *your
 own* usage — the same call `/usage` makes. No analytics, no third parties.
@@ -105,10 +108,19 @@ the colours / fill in that script and re-run it to regenerate.
 
 ## How it works
 
-- Reads the OAuth token from the login keychain (service `Claude Code-credentials`).
+- Reads the OAuth token from the login keychain (service `Claude Code-credentials`),
+  then caches it in its own item so it doesn't re-prompt on every launch (see
+  "First launch" above).
 - Calls `GET https://api.anthropic.com/api/oauth/usage` with the bearer token.
-- It does **not** refresh the token itself — Claude Code keeps it fresh; when it
-  expires the app just shows a "run `claude`" hint.
+- It does **not** refresh the token itself — Claude Code keeps it fresh. On a 401
+  it re-reads Claude Code's item once; if that still fails it shows a
+  "run `claude`" hint.
+- On errors it backs off (honouring `Retry-After` for HTTP 429) and keeps showing
+  the last known values instead of hammering the server.
+
+> **Dev builds & signing:** `build-app.sh` signs with your Developer ID if it can
+> find one (falling back to ad-hoc). A stable signature matters — ad-hoc builds
+> get less predictable keychain behaviour.
 
 ## Project layout
 
