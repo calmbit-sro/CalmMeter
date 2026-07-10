@@ -24,6 +24,11 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/$APP_NAME"
 cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
+if [[ -f "$ROOT/Resources/AppIcon.icns" ]]; then
+    cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
+else
+    echo "  (no AppIcon.icns — run scripts/make-icon.py to generate it)"
+fi
 
 # Ad-hoc signature: required for SMAppService (launch-at-login) to register,
 # and keeps the keychain ACL stable across rebuilds of the same path.
