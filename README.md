@@ -33,7 +33,7 @@ A [CalmBit](https://calmbit.cz) app.
 ### Option B — build from source
 
 ```bash
-git clone <this-repo> && cd calmmeter
+git clone https://github.com/calmbit-sro/CalmMeter.git && cd CalmMeter
 swift test               # optional: run the unit tests
 ./scripts/build-app.sh   # produces ./CalmMeter.app
 open ./CalmMeter.app

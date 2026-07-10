@@ -13,8 +13,8 @@ enum AppInfo {
         return "\(short) (\(build))"
     }
 
-    /// Public source repository. TODO: point at the real repo once created.
-    static let repoURL = URL(string: "https://github.com/calmbit/CalmMeter")!
+    /// Public source repository.
+    static let repoURL = URL(string: "https://github.com/calmbit-sro/CalmMeter")!
 }
 
 enum Localized {
