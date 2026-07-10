@@ -1,0 +1,50 @@
+import SwiftUI
+import ClaudeUsageCore
+
+/// Single shared store so both the SwiftUI scenes and the AppDelegate reference
+/// the same polling state.
+@MainActor
+enum AppEnvironment {
+    static let store: UsageStore = {
+        SettingsKey.registerDefaults()
+        let interval = UserDefaults.standard.double(forKey: SettingsKey.refreshInterval)
+        return UsageStore(interval: interval > 0 ? interval : 60)
+    }()
+}
+
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        // Menu-bar-only agent: no Dock icon (also covered by LSUIElement in the
+        // bundle, but set here so `swift run` behaves the same).
+        NSApp.setActivationPolicy(.accessory)
+        AppEnvironment.store.start()
+    }
+}
+
+@main
+struct ClaudeUsageApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
+    @StateObject private var store = AppEnvironment.store
+    @AppStorage(SettingsKey.barDisplayMode) private var barModeRaw = BarDisplayMode.dotAndFiveHour.rawValue
+
+    var body: some Scene {
+        MenuBarExtra {
+            MenuContent().environmentObject(store)
+        } label: {
+            BarLabel(
+                usage: store.usage,
+                hasError: store.lastError != nil,
+                mode: BarDisplayMode(rawValue: barModeRaw) ?? .dotAndFiveHour,
+                rules: UserDefaults.standard.colorRules
+            )
+        }
+        .menuBarExtraStyle(.window)
+
+        Window("Předvolby", id: "preferences") {
+            PreferencesView().environmentObject(store)
+        }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
+    }
+}
