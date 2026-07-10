@@ -1,0 +1,50 @@
+/* Menu panel */
+"Usage" = "Spotřeba";
+"Refresh now" = "Obnovit teď";
+"Spend" = "Útrata";
+"Loading…" = "Načítám…";
+"Preferences…" = "Předvolby…";
+"Quit" = "Ukončit";
+
+"window.5h" = "5h okno";
+"window.weekly" = "Týden";
+
+"updated_at" = "Aktualizováno %@";
+
+/* Reset countdowns */
+"reset.now" = "reset teď";
+"reset.in_minutes" = "reset za %ld min";
+"reset.in_hours" = "reset za %ld h";
+"reset.in_hours_minutes" = "reset za %ld h %ld min";
+"reset.in_days" = "reset za %ld d";
+"reset.in_days_hours" = "reset za %ld d %ld h";
+
+/* Errors */
+"error.offline" = "Bez připojení";
+"error.not_logged_in" = "Nepřihlášeno — spusť `claude`";
+"error.unauthorized" = "Přihlášení vypršelo — spusť `claude`";
+"error.rate_limited" = "Příliš mnoho požadavků — zkusím to znovu";
+"error.server" = "Chyba serveru (HTTP %ld)";
+"error.unknown" = "Něco se pokazilo";
+
+/* Menu-bar display modes */
+"barmode.dot_5h" = "Tečka + 5h %";
+"barmode.5h" = "Jen 5h %";
+"barmode.5h_7d" = "5h % · týden %";
+"barmode.dot" = "Jen tečka";
+
+/* Preferences */
+"Menu bar" = "Lišta";
+"Format" = "Formát";
+"Per-model breakdown in menu" = "Rozpad po modelech v menu";
+"Refresh" = "Obnovování";
+"Interval" = "Interval";
+"Startup" = "Spuštění";
+"Launch at login" = "Spouštět při přihlášení";
+"Colour thresholds" = "Barevné prahy";
+"Green below" = "Zelená pod";
+"Orange below" = "Oranžová pod";
+"threshold.above_red" = "Nad %ld %% je červená.";
+"About" = "O aplikaci";
+"Version" = "Verze";
+"GitHub" = "GitHub";

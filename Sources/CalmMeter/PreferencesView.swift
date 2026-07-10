@@ -15,36 +15,41 @@ struct PreferencesView: View {
 
     var body: some View {
         Form {
-            Section("Zobrazení v liště") {
-                Picker("Formát", selection: $barModeRaw) {
+            Section("Menu bar") {
+                Picker("Format", selection: $barModeRaw) {
                     ForEach(BarDisplayMode.allCases) { mode in
                         Text(mode.label).tag(mode.rawValue)
                     }
                 }
-                Toggle("Rozpad po modelech v menu", isOn: $showPerModel)
+                Toggle("Per-model breakdown in menu", isOn: $showPerModel)
             }
 
-            Section("Obnovování") {
+            Section("Refresh") {
                 Picker("Interval", selection: $refreshInterval) {
                     ForEach(intervals, id: \.1) { Text($0.0).tag($0.1) }
                 }
                 .onChange(of: refreshInterval) { store.setInterval($0) }
             }
 
-            Section("Spuštění") {
-                Toggle("Spouštět při přihlášení", isOn: $launchAtLogin)
+            Section("Startup") {
+                Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { LoginItem.setEnabled($0) }
             }
 
-            Section("Barevné prahy (% využití)") {
+            Section("Colour thresholds") {
                 Stepper(value: $greenMax, in: 10...orangeMax, step: 5) {
-                    LabeledContent("Zelená pod", value: "\(Int(greenMax)) %")
+                    LabeledContent("Green below", value: "\(Int(greenMax)) %")
                 }
                 Stepper(value: $orangeMax, in: greenMax...100, step: 5) {
-                    LabeledContent("Oranžová pod", value: "\(Int(orangeMax)) %")
+                    LabeledContent("Orange below", value: "\(Int(orangeMax)) %")
                 }
-                Text("Nad \(Int(orangeMax)) % je červená.")
+                Text(Localized.string("threshold.above_red", Int(orangeMax)))
                     .font(.caption).foregroundStyle(.secondary)
+            }
+
+            Section("About") {
+                LabeledContent("Version", value: AppInfo.versionString)
+                Link("GitHub", destination: AppInfo.repoURL)
             }
         }
         .formStyle(.grouped)

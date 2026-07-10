@@ -11,10 +11,10 @@ enum BarDisplayMode: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .dotAndFiveHour: return "Tečka + 5h %"
-        case .fiveHourOnly:   return "Jen 5h %"
-        case .fiveAndSeven:   return "5h % · týden %"
-        case .dotOnly:        return "Jen tečka"
+        case .dotAndFiveHour: return Localized.string("barmode.dot_5h")
+        case .fiveHourOnly:   return Localized.string("barmode.5h")
+        case .fiveAndSeven:   return Localized.string("barmode.5h_7d")
+        case .dotOnly:        return Localized.string("barmode.dot")
         }
     }
 }

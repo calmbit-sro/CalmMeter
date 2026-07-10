@@ -78,18 +78,18 @@ final class ResetCountdownTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 1_000_000)
 
     func testMinutes() {
-        XCTAssertEqual(ResetCountdown.string(until: now.addingTimeInterval(45 * 60), now: now), "za 45 min")
+        XCTAssertEqual(ResetCountdown.value(until: now.addingTimeInterval(45 * 60), now: now), .minutes(45))
     }
     func testHoursAndMinutes() {
-        XCTAssertEqual(ResetCountdown.string(until: now.addingTimeInterval(3 * 3600 + 12 * 60), now: now), "za 3 h 12 min")
+        XCTAssertEqual(ResetCountdown.value(until: now.addingTimeInterval(3 * 3600 + 12 * 60), now: now), .hoursMinutes(3, 12))
     }
     func testDays() {
-        XCTAssertEqual(ResetCountdown.string(until: now.addingTimeInterval(2 * 86400 + 5 * 3600), now: now), "za 2 d 5 h")
+        XCTAssertEqual(ResetCountdown.value(until: now.addingTimeInterval(2 * 86400 + 5 * 3600), now: now), .days(2, 5))
     }
     func testPast() {
-        XCTAssertEqual(ResetCountdown.string(until: now.addingTimeInterval(-10), now: now), "teď")
+        XCTAssertEqual(ResetCountdown.value(until: now.addingTimeInterval(-10), now: now), .now)
     }
     func testNil() {
-        XCTAssertNil(ResetCountdown.string(until: nil, now: now))
+        XCTAssertNil(ResetCountdown.value(until: nil, now: now))
     }
 }

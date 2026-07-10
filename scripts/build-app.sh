@@ -30,6 +30,12 @@ else
     echo "  (no AppIcon.icns — run scripts/make-icon.py to generate it)"
 fi
 
+# Localizations (en/cs). Shipped in the main bundle so NSLocalizedString /
+# SwiftUI Text pick them up per the system language.
+for lproj in "$ROOT"/Resources/*.lproj; do
+    [[ -d "$lproj" ]] && cp -R "$lproj" "$APP/Contents/Resources/"
+done
+
 # Sign with a stable identity. A Developer ID (if present) gives the app a
 # stable designated requirement, so the keychain "Always Allow" grant sticks and
 # macOS stops re-prompting on every launch. Ad-hoc signatures aren't trusted the

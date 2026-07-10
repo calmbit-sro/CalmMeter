@@ -9,16 +9,11 @@ public enum UsageClientError: Error, LocalizedError, Equatable {
 
     public var errorDescription: String? {
         switch self {
-        case .unauthorized:
-            return "Přihlášení vypršelo — spusť `claude` a přihlaš se znovu."
-        case .rateLimited:
-            return "Příliš mnoho požadavků — zkusím to znovu za chvíli."
-        case .http(let code):
-            return "Server vrátil chybu (HTTP \(code))."
-        case .offline:
-            return "Bez připojení."
-        case .decoding(let detail):
-            return "Nečekaná odpověď serveru: \(detail)"
+        case .unauthorized: return "Unauthorized (token rejected)."
+        case .rateLimited: return "Rate limited (HTTP 429)."
+        case .http(let code): return "Server error (HTTP \(code))."
+        case .offline: return "Offline / network error."
+        case .decoding(let detail): return "Unexpected response: \(detail)"
         }
     }
 

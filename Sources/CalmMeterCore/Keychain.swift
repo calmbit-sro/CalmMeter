@@ -22,12 +22,12 @@ public enum KeychainError: Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .notFound:
-            return "V Keychainu nejsou přihlašovací údaje Claude Code. Spusť `claude` a přihlaš se."
+            return "No Claude Code credentials in the keychain."
         case .unexpectedData:
-            return "Přihlašovací údaje mají neočekávaný formát."
+            return "Credentials have an unexpected format."
         case .osStatus(let status):
             let msg = SecCopyErrorMessageString(status, nil) as String? ?? "\(status)"
-            return "Chyba Keychainu: \(msg)"
+            return "Keychain error: \(msg)"
         }
     }
 }

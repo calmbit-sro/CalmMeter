@@ -1,0 +1,50 @@
+/* Menu panel */
+"Usage" = "Usage";
+"Refresh now" = "Refresh now";
+"Spend" = "Spend";
+"Loading…" = "Loading…";
+"Preferences…" = "Preferences…";
+"Quit" = "Quit";
+
+"window.5h" = "5h window";
+"window.weekly" = "Weekly";
+
+"updated_at" = "Updated %@";
+
+/* Reset countdowns */
+"reset.now" = "resets now";
+"reset.in_minutes" = "resets in %ldm";
+"reset.in_hours" = "resets in %ldh";
+"reset.in_hours_minutes" = "resets in %ldh %ldm";
+"reset.in_days" = "resets in %ldd";
+"reset.in_days_hours" = "resets in %ldd %ldh";
+
+/* Errors */
+"error.offline" = "Offline";
+"error.not_logged_in" = "Not logged in — run `claude`";
+"error.unauthorized" = "Session expired — run `claude`";
+"error.rate_limited" = "Too many requests — retrying soon";
+"error.server" = "Server error (HTTP %ld)";
+"error.unknown" = "Something went wrong";
+
+/* Menu-bar display modes */
+"barmode.dot_5h" = "Dot + 5h %";
+"barmode.5h" = "5h % only";
+"barmode.5h_7d" = "5h % · weekly %";
+"barmode.dot" = "Dot only";
+
+/* Preferences */
+"Menu bar" = "Menu bar";
+"Format" = "Format";
+"Per-model breakdown in menu" = "Per-model breakdown in menu";
+"Refresh" = "Refresh";
+"Interval" = "Interval";
+"Startup" = "Startup";
+"Launch at login" = "Launch at login";
+"Colour thresholds" = "Colour thresholds";
+"Green below" = "Green below";
+"Orange below" = "Orange below";
+"threshold.above_red" = "Above %ld%% is red.";
+"About" = "About";
+"Version" = "Version";
+"GitHub" = "GitHub";

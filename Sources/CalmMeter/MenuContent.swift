@@ -2,6 +2,7 @@ import SwiftUI
 import CalmMeterCore
 
 /// A labelled utilization bar (used for 5h, 7d and per-model rows).
+/// `title` is already display-ready (a localized label or a model name).
 struct UsageBar: View {
     let title: String
     let percent: Double?
@@ -25,8 +26,8 @@ struct UsageBar: View {
                 }
             }
             .frame(height: 6)
-            if let reset = ResetCountdown.string(until: resetsAt, now: Date()) {
-                Text("reset \(reset)")
+            if let reset = ResetCountdown.value(until: resetsAt, now: Date()) {
+                Text(Localized.reset(reset))
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
             }
@@ -62,11 +63,11 @@ struct MenuContent: View {
                     }
                 }
             } else if store.isLoading {
-                Text("Načítám…").foregroundStyle(.secondary).font(.system(size: 12))
+                Text("Loading…").foregroundStyle(.secondary).font(.system(size: 12))
             }
 
             if let err = store.lastError {
-                Text(err)
+                Text(Localized.error(err))
                     .font(.system(size: 11))
                     .foregroundStyle(store.usage == nil ? .red : .secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -81,13 +82,13 @@ struct MenuContent: View {
 
     private var header: some View {
         HStack {
-            Text("Claude Usage").font(.system(size: 13, weight: .semibold))
+            Text("Usage").font(.system(size: 13, weight: .semibold))
             Spacer()
             Button { Task { await store.refreshNow() } } label: {
                 Image(systemName: "arrow.clockwise")
             }
             .buttonStyle(.borderless)
-            .help("Obnovit teď")
+            .help(Text("Refresh now"))
             .disabled(store.isLoading)
         }
     }
@@ -95,13 +96,13 @@ struct MenuContent: View {
     private func windows(_ usage: Usage) -> some View {
         VStack(spacing: 12) {
             UsageBar(
-                title: "5h okno",
+                title: Localized.string("window.5h"),
                 percent: usage.fiveHour?.utilization,
                 resetsAt: usage.fiveHour?.resetsAt,
                 color: rules.color(percent: usage.fiveHour?.utilization ?? 0, severity: usage.overallSeverity)
             )
             UsageBar(
-                title: "Týden",
+                title: Localized.string("window.weekly"),
                 percent: usage.sevenDay?.utilization,
                 resetsAt: usage.sevenDay?.resetsAt,
                 color: rules.color(percent: usage.sevenDay?.utilization ?? 0)
@@ -125,16 +126,16 @@ struct MenuContent: View {
     private var footer: some View {
         HStack {
             if let updated = store.lastUpdated {
-                Text("Aktualizováno \(updated.formatted(date: .omitted, time: .shortened))")
+                Text(Localized.updatedAt(updated))
                     .font(.system(size: 10)).foregroundStyle(.secondary)
             }
             Spacer()
-            Button("Předvolby…") {
+            Button("Preferences…") {
                 openWindow(id: "preferences")
                 NSApp.activate(ignoringOtherApps: true)
             }
             .buttonStyle(.borderless)
-            Button("Ukončit") { NSApp.terminate(nil) }
+            Button("Quit") { NSApp.terminate(nil) }
                 .buttonStyle(.borderless)
         }
         .font(.system(size: 11))

@@ -12,7 +12,7 @@ import Combine
 @MainActor
 public final class UsageStore: ObservableObject {
     @Published public private(set) var usage: Usage?
-    @Published public private(set) var lastError: String?
+    @Published public private(set) var lastError: UsageErrorKind?
     @Published public private(set) var isLoading = false
     @Published public private(set) var lastUpdated: Date?
 
@@ -58,7 +58,7 @@ public final class UsageStore: ObservableObject {
             nextDelay = interval
         } catch {
             consecutiveFailures += 1
-            lastError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            lastError = UsageErrorKind(error)
             nextDelay = backoffDelay(for: error)
         }
         isLoading = false

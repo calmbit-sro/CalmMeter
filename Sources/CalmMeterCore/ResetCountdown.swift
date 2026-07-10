@@ -1,25 +1,26 @@
 import Foundation
 
-/// Formats "time until reset" for the dropdown, e.g. "za 3 h 12 min" / "za 2 dny".
-/// Pure and deterministic given `now`, so it is unit-testable.
+/// Language-free breakdown of "time until reset". The UI turns this into a
+/// localized string, so Core stays free of display language. Pure/testable.
 public enum ResetCountdown {
-    public static func string(until date: Date?, now: Date) -> String? {
+    public enum Value: Equatable {
+        case now
+        case minutes(Int)
+        case hoursMinutes(Int, Int)
+        case days(Int, Int)
+    }
+
+    public static func value(until date: Date?, now: Date) -> Value? {
         guard let date else { return nil }
         let seconds = Int(date.timeIntervalSince(now))
-        if seconds <= 0 { return "teď" }
+        if seconds <= 0 { return .now }
 
         let minutes = seconds / 60
         let hours = minutes / 60
         let days = hours / 24
 
-        if days >= 1 {
-            let remHours = hours % 24
-            return remHours > 0 ? "za \(days) d \(remHours) h" : "za \(days) d"
-        }
-        if hours >= 1 {
-            let remMin = minutes % 60
-            return remMin > 0 ? "za \(hours) h \(remMin) min" : "za \(hours) h"
-        }
-        return "za \(max(1, minutes)) min"
+        if days >= 1 { return .days(days, hours % 24) }
+        if hours >= 1 { return .hoursMinutes(hours, minutes % 60) }
+        return .minutes(max(1, minutes))
     }
 }
