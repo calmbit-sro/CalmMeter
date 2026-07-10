@@ -3,6 +3,7 @@
 /build/
 *.app/
 ClaudeUsage.app/
+*.dmg
 .swiftpm/
 xcuserdata/
 *.xcodeproj/xcuserdata/
