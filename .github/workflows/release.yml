@@ -24,7 +24,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Skip cleanly (green run, not a red X) if signing secrets aren't set yet.
+      - name: Check signing secrets
+        id: check
+        env:
+          CERT_B64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+        run: |
+          if [ -n "$CERT_B64" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Signing secrets not configured — skipping DMG build. See .github/workflows/release.yml for the required secrets."
+          fi
+
       - name: Import Developer ID certificate
+        if: steps.check.outputs.ready == 'true'
         env:
           CERT_B64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
           CERT_PW: ${{ secrets.MACOS_CERT_PASSWORD }}
@@ -42,6 +56,7 @@ jobs:
           rm -f "$RUNNER_TEMP/cert.p12"
 
       - name: Store notarization credentials
+        if: steps.check.outputs.ready == 'true'
         env:
           NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
           NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
@@ -53,9 +68,11 @@ jobs:
             --password "$NOTARY_PASSWORD"
 
       - name: Build, sign and notarize DMG
+        if: steps.check.outputs.ready == 'true'
         run: ./scripts/make-dmg.sh --notarize ci
 
       - name: Attach DMG to the release
+        if: steps.check.outputs.ready == 'true'
         uses: softprops/action-gh-release@v2
         with:
           files: CalmMeter.dmg
