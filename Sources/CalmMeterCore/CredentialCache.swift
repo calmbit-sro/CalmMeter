@@ -28,27 +28,44 @@ public protocol CredentialCaching {
 ///
 /// macOS won't persistently grant a third-party app access to another app's
 /// keychain item (the "Always Allow" doesn't stick for partition-listed items),
-/// so every read of `Claude Code-credentials` risks a password prompt. By copying
-/// the token into an item CalmMeter owns, subsequent reads never prompt. We only
-/// go back to Claude Code's item when the cached token stops working (HTTP 401),
-/// i.e. roughly once per token rotation.
+/// so every read of the token *data* from `Claude Code-credentials` risks a
+/// password prompt. By copying the token into an item CalmMeter owns, subsequent
+/// reads never prompt.
+///
+/// The catch: Claude Code rotates its token, and a rotated (stale) token comes
+/// back from the API as **429**, not 401 — so keying refresh off auth failures
+/// alone left us stuck on a dead token. Instead we cheaply read the *modification
+/// date* of Claude Code's item on each call (an attribute-only query, which does
+/// NOT prompt) and re-read the token data only when it has actually changed. That
+/// keeps us on a current token without prompting on every poll.
 public struct CachedCredentialProvider: CredentialProviding {
     private let cache: CredentialCaching
     private let readSourceOfTruth: () throws -> ClaudeCredentials
+    private let sourceModifiedDate: () -> Date?
 
     public init(
         cache: CredentialCaching = CredentialCache(),
-        readSourceOfTruth: @escaping () throws -> ClaudeCredentials = Keychain.readCredentials
+        readSourceOfTruth: @escaping () throws -> ClaudeCredentials = Keychain.readCredentials,
+        sourceModifiedDate: @escaping () -> Date? = Keychain.readModificationDate
     ) {
         self.cache = cache
         self.readSourceOfTruth = readSourceOfTruth
+        self.sourceModifiedDate = sourceModifiedDate
     }
 
     public func credentials(forceRefresh: Bool) throws -> ClaudeCredentials {
         if !forceRefresh, let cached = cache.load() {
-            return cached
+            let currentDate = sourceModifiedDate()
+            // Use the cache while Claude Code's item hasn't changed since we
+            // cached it. If we can't read the date, keep the cache rather than
+            // risk a prompt on the normal path.
+            if currentDate == nil || currentDate == cached.sourceModified {
+                return cached
+            }
+            // Otherwise it rotated — fall through and re-read.
         }
-        // Bootstrap or refresh: read Claude Code's item (may prompt) and cache it.
+        // Bootstrap / rotation / forced refresh: read the token data (may prompt)
+        // and cache it together with the source item's modification date.
         let fresh = try readSourceOfTruth()
         try? cache.store(fresh)
         return fresh
@@ -105,13 +122,15 @@ public struct CredentialCache: CredentialCaching {
         let accessToken: String
         let expiresAtMillis: Double?
         let subscriptionType: String?
+        let sourceModifiedMillis: Double?
     }
 
     func encode(_ creds: ClaudeCredentials) throws -> Data {
         let stored = Stored(
             accessToken: creds.accessToken,
             expiresAtMillis: creds.expiresAt.map { $0.timeIntervalSince1970 * 1000 },
-            subscriptionType: creds.subscriptionType
+            subscriptionType: creds.subscriptionType,
+            sourceModifiedMillis: creds.sourceModified.map { $0.timeIntervalSince1970 * 1000 }
         )
         return try JSONEncoder().encode(stored)
     }
@@ -121,7 +140,8 @@ public struct CredentialCache: CredentialCaching {
         return ClaudeCredentials(
             accessToken: s.accessToken,
             expiresAt: s.expiresAtMillis.map { Date(timeIntervalSince1970: $0 / 1000) },
-            subscriptionType: s.subscriptionType
+            subscriptionType: s.subscriptionType,
+            sourceModified: s.sourceModifiedMillis.map { Date(timeIntervalSince1970: $0 / 1000) }
         )
     }
 }
