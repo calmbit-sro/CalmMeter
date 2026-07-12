@@ -14,10 +14,29 @@ enum AppEnvironment {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// Held for the app's lifetime to opt out of App Nap, which would otherwise
+    /// suspend our poll timer while the menu-bar agent looks idle — leaving a
+    /// transient error on screen indefinitely. `...AllowingIdleSystemSleep` still
+    /// lets the Mac sleep normally to save power.
+    private var activity: NSObjectProtocol?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Menu-bar-only agent: no Dock icon (also covered by LSUIElement in the
         // bundle, but set here so `swift run` behaves the same).
         NSApp.setActivationPolicy(.accessory)
+
+        activity = ProcessInfo.processInfo.beginActivity(
+            options: .userInitiatedAllowingIdleSystemSleep,
+            reason: "Polling Claude Code usage"
+        )
+
+        // Recover promptly after the Mac wakes (timers don't fire during sleep).
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+        ) { _ in
+            Task { @MainActor in await AppEnvironment.store.refreshNow() }
+        }
+
         AppEnvironment.store.start()
     }
 }

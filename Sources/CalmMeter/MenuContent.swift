@@ -78,6 +78,11 @@ struct MenuContent: View {
         }
         .padding(14)
         .frame(width: 280)
+        .onAppear {
+            // Opening the panel always tries to bring data up to date (and
+            // recovers immediately if a transient error is showing).
+            Task { await store.refreshIfStale() }
+        }
     }
 
     private var header: some View {

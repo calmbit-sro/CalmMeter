@@ -21,9 +21,11 @@ public final class UsageStore: ObservableObject {
     private var timer: Timer?
     private var consecutiveFailures = 0
     private var started = false
+    private var inFlight = false
 
-    /// Backoff ceiling — never wait longer than this between attempts.
-    private let maxBackoff: TimeInterval = 15 * 60
+    /// Backoff ceiling — never wait longer than this between attempts, so a
+    /// transient error recovers on its own within a few minutes.
+    private let maxBackoff: TimeInterval = 5 * 60
 
     public init(client: UsageClient = UsageClient(), interval: TimeInterval = 60) {
         self.client = client
@@ -46,8 +48,23 @@ public final class UsageStore: ObservableObject {
         if consecutiveFailures == 0 { scheduleNext(after: interval) }
     }
 
+    /// Refresh only if the data is stale or currently showing an error. Used by
+    /// UI triggers (menu opened, system woke) so they recover a stuck state
+    /// immediately without piling on redundant requests.
+    public func refreshIfStale(_ seconds: TimeInterval = 30) async {
+        if lastError == nil, let last = lastUpdated, Date().timeIntervalSince(last) < seconds {
+            return
+        }
+        await refreshNow()
+    }
+
     /// Fetch once and (re)schedule the next poll based on the outcome.
+    /// Re-entrancy-guarded so overlapping triggers can't double-fetch.
     public func refreshNow() async {
+        if inFlight { return }
+        inFlight = true
+        defer { inFlight = false }
+
         isLoading = true
         var nextDelay = interval
         do {

@@ -25,6 +25,22 @@ final class UsageStoreTests: XCTestCase {
         return UsageStore(client: client, interval: interval)
     }
 
+    func testRefreshIfStaleSkipsWhenFreshButRefreshesWhenStale() async throws {
+        let counter = Counter()
+        let store = makeStore(counter: counter, interval: 9999)
+
+        await store.refreshNow()
+        XCTAssertEqual(counter.value, 1)
+
+        // Fresh data → skip.
+        await store.refreshIfStale(9999)
+        XCTAssertEqual(counter.value, 1)
+
+        // Treat anything as stale → refresh.
+        await store.refreshIfStale(0)
+        XCTAssertEqual(counter.value, 2)
+    }
+
     func testStartIsIdempotent() async throws {
         let counter = Counter()
         // Long interval so only the immediate startup fetch can happen in the test window.
