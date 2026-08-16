@@ -28,6 +28,7 @@ public enum KeychainError: Error, LocalizedError {
     case notFound
     case unexpectedData
     case osStatus(OSStatus)
+    case toolFailed(Int32)
 
     public var errorDescription: String? {
         switch self {
@@ -38,6 +39,8 @@ public enum KeychainError: Error, LocalizedError {
         case .osStatus(let status):
             let msg = SecCopyErrorMessageString(status, nil) as String? ?? "\(status)"
             return "Keychain error: \(msg)"
+        case .toolFailed(let code):
+            return "security tool exited with code \(code)."
         }
     }
 }
@@ -47,28 +50,88 @@ public enum KeychainError: Error, LocalizedError {
 public enum Keychain {
     public static let service = "Claude Code-credentials"
 
-    /// Reads the token (and the item's modification date). Retrieving the secret
-    /// data is what triggers the macOS keychain prompt.
+    /// Reads the token (and the item's modification date).
+    ///
+    /// AIDEV-NOTE: the secret is read via /usr/bin/security, NOT SecItemCopyMatching.
+    /// Claude Code rewrites this item with `security add-generic-password -U` on every
+    /// token rotation, which resets the item's partition list to ("apple-tool:") and
+    /// revokes any "Always Allow" the user granted CalmMeter (proven 2026-08-16).
+    /// The `security` binary itself is partition apple-tool:, so reading through it
+    /// never hits the XARA partition check → never prompts. Don't revert to SecItem.
     public static func readCredentials() throws -> ClaudeCredentials {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecReturnData as String: true,
-            kSecReturnAttributes as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
+        // Attribute-only query first (never prompts). If a rotation lands between
+        // this and the data read, the cached date is older than the item's, so the
+        // next poll simply re-reads — silently.
+        let mdat = readModificationDate()
+        let output = try readSecretViaSecurityTool()
+        return try parse(decodeSecurityToolOutput(output), sourceModified: mdat)
+    }
 
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
-        guard status != errSecItemNotFound else { throw KeychainError.notFound }
-        guard status == errSecSuccess else { throw KeychainError.osStatus(status) }
-        guard let dict = item as? [String: Any],
-              let data = dict[kSecValueData as String] as? Data else {
-            throw KeychainError.unexpectedData
+    /// Runs `security find-generic-password -s <service> -w` and returns its stdout.
+    static func readSecretViaSecurityTool() throws -> Data {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/security")
+        process.arguments = ["find-generic-password", "-s", service, "-w"]
+        let stdout = Pipe()
+        process.standardOutput = stdout
+        // Discard stderr entirely (exit code carries the outcome). A Pipe here
+        // would deadlock if the tool ever wrote >64KB of diagnostics to it.
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+        } catch {
+            throw KeychainError.toolFailed(-1)
+        }
+        let data: Data
+        do {
+            data = try stdout.fileHandleForReading.readToEnd() ?? Data()
+        } catch {
+            process.waitUntilExit()
+            throw KeychainError.toolFailed(-2)
+        }
+        process.waitUntilExit()
+        switch process.terminationStatus {
+        case 0: return data
+        // 44 is the tool's errSecItemNotFound exit code — unofficial but stable.
+        // If Apple ever changes it, notFound degrades to toolFailed (worse
+        // message, still a recoverable error).
+        case 44: throw KeychainError.notFound
+        default: throw KeychainError.toolFailed(process.terminationStatus)
+        }
+    }
+
+    /// Decodes `security … -w` output: the tool appends a newline, and prints hex
+    /// instead of raw bytes when the secret contains non-printable characters. Our
+    /// payload is JSON (starts with "{"), which can never be an even-length pure-hex
+    /// string, so hex output is unambiguous.
+    static func decodeSecurityToolOutput(_ output: Data) -> Data {
+        var bytes = [UInt8](output)
+        if bytes.last == 0x0A { bytes.removeLast() }
+
+        func hexValue(_ b: UInt8) -> UInt8? {
+            switch b {
+            case 0x30...0x39: return b - 0x30        // 0-9
+            case 0x41...0x46: return b - 0x41 + 10   // A-F
+            case 0x61...0x66: return b - 0x61 + 10   // a-f
+            default: return nil
+            }
         }
 
-        let mdat = dict[kSecAttrModificationDate as String] as? Date
-        return try parse(data, sourceModified: mdat)
+        if !bytes.isEmpty, bytes.count.isMultiple(of: 2) {
+            var decoded = [UInt8]()
+            decoded.reserveCapacity(bytes.count / 2)
+            var i = 0
+            while i < bytes.count {
+                guard let hi = hexValue(bytes[i]), let lo = hexValue(bytes[i + 1]) else {
+                    decoded.removeAll()
+                    break
+                }
+                decoded.append(hi << 4 | lo)
+                i += 2
+            }
+            if i == bytes.count { return Data(decoded) }
+        }
+        return Data(bytes)
     }
 
     /// Reads only the item's modification date — attribute-only queries do NOT
