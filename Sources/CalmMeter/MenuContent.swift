@@ -38,6 +38,7 @@ struct UsageBar: View {
 /// The popover content of the menu-bar item.
 struct MenuContent: View {
     @EnvironmentObject var store: UsageStore
+    @EnvironmentObject var updates: UpdateStore
     @Environment(\.openWindow) private var openWindow
     @AppStorage(SettingsKey.showPerModel) private var showPerModel = false
 
@@ -71,6 +72,20 @@ struct MenuContent: View {
                     .font(.system(size: 11))
                     .foregroundStyle(store.usage == nil ? .red : .secondary)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if let release = updates.available {
+                Divider()
+                Button {
+                    NSWorkspace.shared.open(release.url)
+                } label: {
+                    Label(
+                        Localized.string("update.available", release.version.description),
+                        systemImage: "arrow.down.circle"
+                    )
+                    .font(.system(size: 11, weight: .medium))
+                }
+                .buttonStyle(.borderless)
             }
 
             Divider()

@@ -28,6 +28,7 @@ enum SettingsKey {
     static let launchAtLogin = "launchAtLogin"
     static let greenMax = "colorGreenMax"
     static let orangeMax = "colorOrangeMax"
+    static let checkForUpdates = "checkForUpdates"
 
     static func registerDefaults() {
         UserDefaults.standard.register(defaults: [
@@ -37,6 +38,7 @@ enum SettingsKey {
             launchAtLogin: true,
             greenMax: 60.0,
             orangeMax: 85.0,
+            checkForUpdates: true,
         ])
     }
 }

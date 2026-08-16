@@ -45,6 +45,11 @@
 "Green below" = "Zelená pod";
 "Orange below" = "Oranžová pod";
 "threshold.above_red" = "Nad %ld %% je červená.";
+"Updates" = "Aktualizace";
+"Check for updates automatically" = "Automaticky kontrolovat aktualizace";
 "About" = "O aplikaci";
 "Version" = "Verze";
 "GitHub" = "GitHub";
+
+/* Update check */
+"update.available" = "Nová verze %@ — stáhnout";

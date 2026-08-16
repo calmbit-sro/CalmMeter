@@ -10,6 +10,7 @@ struct PreferencesView: View {
     @AppStorage(SettingsKey.launchAtLogin) private var launchAtLogin = true
     @AppStorage(SettingsKey.greenMax) private var greenMax = 60.0
     @AppStorage(SettingsKey.orangeMax) private var orangeMax = 85.0
+    @AppStorage(SettingsKey.checkForUpdates) private var checkForUpdates = true
 
     private let intervals: [(String, Double)] = [("30 s", 30), ("60 s", 60), ("5 min", 300)]
 
@@ -45,6 +46,10 @@ struct PreferencesView: View {
                 }
                 Text(Localized.string("threshold.above_red", Int(orangeMax)))
                     .font(.caption).foregroundStyle(.secondary)
+            }
+
+            Section("Updates") {
+                Toggle("Check for updates automatically", isOn: $checkForUpdates)
             }
 
             Section("About") {

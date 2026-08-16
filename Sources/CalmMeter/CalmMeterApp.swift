@@ -10,6 +10,8 @@ enum AppEnvironment {
         let interval = UserDefaults.standard.double(forKey: SettingsKey.refreshInterval)
         return UsageStore(interval: interval > 0 ? interval : 60)
     }()
+
+    static let updates = UpdateStore()
 }
 
 @MainActor
@@ -38,6 +40,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         AppEnvironment.store.start()
+        AppEnvironment.updates.start()
     }
 }
 
@@ -49,7 +52,9 @@ struct CalmMeterApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuContent().environmentObject(store)
+            MenuContent()
+                .environmentObject(store)
+                .environmentObject(AppEnvironment.updates)
         } label: {
             BarLabel(
                 usage: store.usage,

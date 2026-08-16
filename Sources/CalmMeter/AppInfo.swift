@@ -13,6 +13,11 @@ enum AppInfo {
         return "\(short) (\(build))"
     }
 
+    /// e.g. "1.0.4" — what the update check compares against.
+    static var shortVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+    }
+
     /// Public source repository.
     static let repoURL = URL(string: "https://github.com/calmbit-sro/CalmMeter")!
 }

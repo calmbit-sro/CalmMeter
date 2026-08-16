@@ -45,6 +45,11 @@
 "Green below" = "Green below";
 "Orange below" = "Orange below";
 "threshold.above_red" = "Above %ld%% is red.";
+"Updates" = "Updates";
+"Check for updates automatically" = "Check for updates automatically";
 "About" = "About";
 "Version" = "Version";
 "GitHub" = "GitHub";
+
+/* Update check */
+"update.available" = "New version %@ — download";
