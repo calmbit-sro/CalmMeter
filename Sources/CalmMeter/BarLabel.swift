@@ -38,13 +38,17 @@ private struct LabelContent: View {
 
     private var fiveHour: Double? { usage?.fiveHour?.utilization }
     private var sevenDay: Double? { usage?.sevenDay?.utilization }
-    private var severity: Severity { usage?.overallSeverity ?? .normal }
-
+    /// The dot answers "is anything close to blocking me?", so it keeps the
+    /// worst-across-all severity. The percentages answer "how full is *this*
+    /// window?" and must only ever reflect their own limit.
+    private var dotColor: Color {
+        hasError ? .secondary : rules.color(percent: fiveHour ?? 0, severity: usage?.overallSeverity ?? .normal)
+    }
     private var fiveHourColor: Color {
-        hasError ? .secondary : rules.color(percent: fiveHour ?? 0, severity: severity)
+        hasError ? .secondary : rules.color(percent: fiveHour ?? 0, severity: usage?.sessionSeverity ?? .normal)
     }
     private var weeklyColor: Color {
-        hasError ? .secondary : rules.color(percent: sevenDay ?? 0)
+        hasError ? .secondary : rules.color(percent: sevenDay ?? 0, severity: usage?.weeklySeverity ?? .normal)
     }
 
     var body: some View {
@@ -74,7 +78,7 @@ private struct LabelContent: View {
     }
 
     private var dot: some View {
-        Circle().fill(fiveHourColor).frame(width: 7, height: 7)
+        Circle().fill(dotColor).frame(width: 7, height: 7)
     }
 
     private func pct(_ value: Double?) -> String {

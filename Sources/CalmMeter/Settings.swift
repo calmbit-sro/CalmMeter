@@ -49,12 +49,31 @@ struct ColorRules {
     var greenMax: Double
     var orangeMax: Double
 
+    /// Ordered worst-last so the two signals can be combined with `max`.
+    /// SE-0266 synthesizes `Comparable` from the declaration order.
+    private enum Level: Comparable {
+        case green, orange, red
+
+        var color: Color {
+            switch self {
+            case .green: return .green
+            case .orange: return .orange
+            case .red: return .red
+            }
+        }
+    }
+
+    /// AIDEV-NOTE: severity may only raise the level, never lower it — checking it
+    /// first and returning early let a `warning` repaint a past-red percentage orange.
     func color(percent: Double, severity: Severity = .normal) -> Color {
-        if severity == .critical { return .red }
-        if severity == .warning { return .orange }
-        if percent >= orangeMax { return .red }
-        if percent >= greenMax { return .orange }
-        return .green
+        let byPercent: Level = percent >= orangeMax ? .red : (percent >= greenMax ? .orange : .green)
+        let bySeverity: Level
+        switch severity {
+        case .critical: bySeverity = .red
+        case .warning: bySeverity = .orange
+        case .normal, .unknown: bySeverity = .green
+        }
+        return max(byPercent, bySeverity).color
     }
 }
 

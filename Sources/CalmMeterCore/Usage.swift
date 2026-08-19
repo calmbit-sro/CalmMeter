@@ -115,14 +115,37 @@ public struct Usage: Codable, Equatable, Sendable {
         case limits, spend
     }
 
-    /// Worst severity across active limits — drives the menu-bar colour.
+    /// Worst severity across *all* reported limits — session, weekly, and every
+    /// model-scoped one. Deliberately unfiltered: this drives the menu-bar dot,
+    /// whose job is "something is close to blocking you, somewhere".
+    /// It must NOT colour an individual window — use `severity(ofKind:)` for that.
     public var overallSeverity: Severity {
         (limits ?? []).map(\.severity).max() ?? .normal
     }
 
+    /// Severity the API reports for one limit kind, or `.normal` when absent.
+    public func severity(ofKind kind: String) -> Severity {
+        (limits ?? []).first { $0.kind == kind }?.severity ?? .normal
+    }
+
+    /// AIDEV-NOTE: a window's colour must come from its OWN limit. Passing
+    /// `overallSeverity` here painted a 12% session bar red because an unrelated
+    /// weekly-scoped model limit sat at 93% critical (observed live 2026-08-19).
+    public var sessionSeverity: Severity { severity(ofKind: "session") }
+
+    /// Severity of the all-model weekly window alone.
+    public var weeklySeverity: Severity { severity(ofKind: "weekly_all") }
+
     /// Per-model weekly limits worth showing (non-null utilization / present in `limits`).
     public var perModelLimits: [UsageLimit] {
         (limits ?? []).filter { $0.scope?.model?.displayName != nil }
+    }
+
+    /// Scoped limits alarming enough to surface even when the per-model
+    /// preference is off — otherwise a red dot has no visible explanation.
+    /// `.unknown` ranks below `.warning`, so a missing severity never triggers this.
+    public var elevatedPerModelLimits: [UsageLimit] {
+        perModelLimits.filter { $0.severity >= .warning }
     }
 }
 

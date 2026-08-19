@@ -2,9 +2,9 @@ import XCTest
 @testable import CalmMeterCore
 
 final class UsageDecodeTests: XCTestCase {
-    private func fixtureData() throws -> Data {
+    private func fixtureData(_ name: String = "usage_sample") throws -> Data {
         let url = try XCTUnwrap(
-            Bundle.module.url(forResource: "usage_sample", withExtension: "json", subdirectory: "Fixtures")
+            Bundle.module.url(forResource: name, withExtension: "json", subdirectory: "Fixtures")
         )
         return try Data(contentsOf: url)
     }
@@ -34,6 +34,32 @@ final class UsageDecodeTests: XCTestCase {
     func testOverallSeverityIsWorst() throws {
         let usage = try UsageClient.decode(fixtureData())
         XCTAssertEqual(usage.overallSeverity, .normal)
+    }
+
+    func testPerKindSeverityOnQuietFixture() throws {
+        let usage = try UsageClient.decode(fixtureData())
+        XCTAssertEqual(usage.sessionSeverity, .normal)
+        XCTAssertEqual(usage.weeklySeverity, .normal)
+        XCTAssertEqual(usage.severity(ofKind: "no_such_kind"), .normal)
+        XCTAssertTrue(usage.elevatedPerModelLimits.isEmpty)
+    }
+
+    /// A critical model-scoped weekly limit must not leak into the session window.
+    /// Mirrors a live response seen 2026-08-19: Fable weekly 93% critical, session 12%.
+    func testCriticalScopedLimitDoesNotColourSession() throws {
+        let usage = try UsageClient.decode(fixtureData("usage_scoped_critical"))
+        XCTAssertEqual(usage.fiveHour?.utilization, 12.0)
+        XCTAssertEqual(usage.sevenDay?.utilization, 56.0)
+
+        XCTAssertEqual(usage.sessionSeverity, .normal, "session is quiet and must stay quiet")
+        XCTAssertEqual(usage.weeklySeverity, .normal)
+        XCTAssertEqual(usage.overallSeverity, .critical, "the dot still needs to warn")
+
+        let elevated = usage.elevatedPerModelLimits
+        XCTAssertEqual(elevated.count, 1)
+        XCTAssertEqual(elevated.first?.label, "Fable")
+        XCTAssertEqual(elevated.first?.percent, 93)
+        XCTAssertEqual(elevated.first?.isActive, true)
     }
 
     func testSpendDecodes() throws {

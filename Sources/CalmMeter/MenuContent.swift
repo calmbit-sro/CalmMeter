@@ -50,9 +50,10 @@ struct MenuContent: View {
 
             if let usage = store.usage {
                 windows(usage)
-                if showPerModel, !usage.perModelLimits.isEmpty {
+                let scoped = showPerModel ? usage.perModelLimits : usage.elevatedPerModelLimits
+                if !scoped.isEmpty {
                     Divider()
-                    perModel(usage)
+                    perModel(scoped)
                 }
                 if let spend = usage.spend, spend.enabled == true, let used = spend.used {
                     Divider()
@@ -119,20 +120,20 @@ struct MenuContent: View {
                 title: Localized.string("window.5h"),
                 percent: usage.fiveHour?.utilization,
                 resetsAt: usage.fiveHour?.resetsAt,
-                color: rules.color(percent: usage.fiveHour?.utilization ?? 0, severity: usage.overallSeverity)
+                color: rules.color(percent: usage.fiveHour?.utilization ?? 0, severity: usage.sessionSeverity)
             )
             UsageBar(
                 title: Localized.string("window.weekly"),
                 percent: usage.sevenDay?.utilization,
                 resetsAt: usage.sevenDay?.resetsAt,
-                color: rules.color(percent: usage.sevenDay?.utilization ?? 0)
+                color: rules.color(percent: usage.sevenDay?.utilization ?? 0, severity: usage.weeklySeverity)
             )
         }
     }
 
-    private func perModel(_ usage: Usage) -> some View {
+    private func perModel(_ limits: [UsageLimit]) -> some View {
         VStack(spacing: 10) {
-            ForEach(Array(usage.perModelLimits.enumerated()), id: \.offset) { _, limit in
+            ForEach(Array(limits.enumerated()), id: \.offset) { _, limit in
                 UsageBar(
                     title: limit.label,
                     percent: limit.percent,
