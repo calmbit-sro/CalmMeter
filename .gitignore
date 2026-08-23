@@ -7,3 +7,10 @@ CalmMeter.app/
 .swiftpm/
 xcuserdata/
 *.xcodeproj/xcuserdata/
+
+# <!-- claude-leverage:gitignore START -->
+# claude-leverage local state (per-machine, do not commit)
+.last-stack-check
+session-nudges-*.txt
+security-nudges-*.txt
+# <!-- claude-leverage:gitignore END -->
