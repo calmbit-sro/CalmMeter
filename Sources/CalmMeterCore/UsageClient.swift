@@ -59,7 +59,7 @@ public struct UsageClient {
     }
 
     private func attempt(forceRefresh: Bool) async throws -> Usage {
-        let creds = try provider.credentials(forceRefresh: forceRefresh)
+        let creds = try await provider.credentials(forceRefresh: forceRefresh)
 
         var request = URLRequest(url: Self.endpoint)
         request.httpMethod = "GET"

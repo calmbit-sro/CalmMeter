@@ -1,0 +1,15 @@
+{
+  "token_type": "Bearer",
+  "access_token": "<test-access-token-1>",
+  "expires_in": 28800,
+  "refresh_token": "test-refresh-token-1",
+  "scope": "user:inference user:mcp_servers user:profile user:sessions:claude_code",
+  "organization": {
+    "uuid": "00000000-0000-0000-0000-000000000000",
+    "name": "Test Org"
+  },
+  "account": {
+    "uuid": "00000000-0000-0000-0000-000000000001",
+    "email_address": "client@example.com"
+  }
+}

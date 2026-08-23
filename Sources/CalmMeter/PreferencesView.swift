@@ -3,6 +3,8 @@ import CalmMeterCore
 
 struct PreferencesView: View {
     @EnvironmentObject var store: UsageStore
+    @EnvironmentObject var auth: AuthStore
+    @Environment(\.openWindow) private var openWindow
 
     @AppStorage(SettingsKey.barDisplayMode) private var barModeRaw = BarDisplayMode.dotAndFiveHour.rawValue
     @AppStorage(SettingsKey.refreshInterval) private var refreshInterval = 60.0
@@ -50,6 +52,25 @@ struct PreferencesView: View {
 
             Section("Updates") {
                 Toggle("Check for updates automatically", isOn: $checkForUpdates)
+            }
+
+            Section("Account") {
+                if let email = auth.accountEmail {
+                    LabeledContent("account.signed_in_as", value: email.isEmpty ? "—" : email)
+                    Button("account.sign_out") {
+                        Task {
+                            await auth.signOut()
+                            await store.refreshNow()
+                        }
+                    }
+                } else {
+                    Text("account.fallback_hint")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Button("account.sign_in") {
+                        openWindow(id: "signin")
+                        NSApp.activate(ignoringOtherApps: true)
+                    }
+                }
             }
 
             Section("About") {

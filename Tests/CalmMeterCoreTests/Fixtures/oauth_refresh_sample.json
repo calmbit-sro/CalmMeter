@@ -1,0 +1,6 @@
+{
+  "token_type": "Bearer",
+  "access_token": "<test-access-token-2>",
+  "expires_in": 28800,
+  "scope": "user:inference user:profile"
+}

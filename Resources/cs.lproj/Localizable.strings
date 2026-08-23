@@ -22,10 +22,37 @@
 /* Errors */
 "error.offline" = "Bez připojení";
 "error.not_logged_in" = "Nepřihlášeno — spusť `claude`";
+"error.signed_out" = "Odhlášeno — přihlas se znovu";
 "error.unauthorized" = "Přihlášení vypršelo — spusť `claude`";
+"error.credentials_unreadable" = "Uložené přihlášení se nepodařilo přečíst";
 "error.rate_limited" = "Příliš mnoho požadavků — zkusím to znovu";
 "error.server" = "Chyba serveru (HTTP %ld)";
 "error.unknown" = "Něco se pokazilo";
+
+/* Sign-in */
+"signin.window_title" = "Přihlásit se přes Claude";
+"signin.explainer" = "Přihlas se svým Claude účtem a uvidíš svou spotřebu. Claude Code není potřeba instalovat.";
+"signin.open_browser" = "Otevřít claude.ai a přihlásit se";
+"signin.paste_caption" = "Po schválení zkopíruj zobrazený kód a vlož ho sem:";
+"signin.paste_placeholder" = "Vlož kód (CODE#STATE)";
+"signin.confirm" = "Přihlásit se";
+"signin.done" = "Hotovo";
+"signin.success" = "Přihlášen jako %@";
+"signin.error.malformed" = "Tohle nevypadá jako celý kód — zkopíruj celý řetězec.";
+"signin.error.state_mismatch" = "Kód nepatří k tomuto pokusu o přihlášení — začni znovu od kroku 1.";
+"signin.error.failed" = "Přihlášení se nezdařilo — zkus to znovu.";
+"signin.error.offline" = "Bez připojení — zkontroluj síť a zkus to znovu.";
+"signin.button" = "Přihlásit se přes Claude";
+"signin.claude_code_hint" = "Používáš Claude Code? Není potřeba nic nastavovat — CalmMeter si přihlášení najde sám.";
+"empty.not_logged_in.body" = "Na tomto Macu nejsou žádné Claude přihlašovací údaje.";
+"empty.signed_out.body" = "Došlo k odhlášení.";
+
+/* Account (Preferences) */
+"Account" = "Účet";
+"account.signed_in_as" = "Přihlášen jako";
+"account.sign_out" = "Odhlásit se";
+"account.sign_in" = "Přihlásit se…";
+"account.fallback_hint" = "Nepřihlášeno — použije se přihlášení Claude Code, pokud existuje.";
 
 /* Menu-bar display modes */
 "barmode.dot_5h" = "Tečka + 5h %";

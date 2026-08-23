@@ -1,19 +1,21 @@
 import Foundation
 import Security
 
-/// Supplies an access token, hiding *where* it comes from.
+/// Supplies an access token, hiding *where* it comes from. Async because the
+/// own-OAuth path may need a network round-trip (token refresh) to answer.
 public protocol CredentialProviding {
     /// - Parameter forceRefresh: when true, bypass any cache and re-read the
-    ///   source of truth (Claude Code's keychain item), which may prompt.
-    func credentials(forceRefresh: Bool) throws -> ClaudeCredentials
+    ///   source of truth — Claude Code's keychain item (may prompt), or the
+    ///   token endpoint (unconditional refresh) on the own-OAuth path.
+    func credentials(forceRefresh: Bool) async throws -> ClaudeCredentials
 }
 
 /// Test/utility provider backed by a closure.
 public struct AnyCredentialProvider: CredentialProviding {
-    private let body: (Bool) throws -> ClaudeCredentials
-    public init(_ body: @escaping (Bool) throws -> ClaudeCredentials) { self.body = body }
-    public func credentials(forceRefresh: Bool) throws -> ClaudeCredentials {
-        try body(forceRefresh)
+    private let body: (Bool) async throws -> ClaudeCredentials
+    public init(_ body: @escaping (Bool) async throws -> ClaudeCredentials) { self.body = body }
+    public func credentials(forceRefresh: Bool) async throws -> ClaudeCredentials {
+        try await body(forceRefresh)
     }
 }
 
@@ -53,7 +55,7 @@ public struct CachedCredentialProvider: CredentialProviding {
         self.sourceModifiedDate = sourceModifiedDate
     }
 
-    public func credentials(forceRefresh: Bool) throws -> ClaudeCredentials {
+    public func credentials(forceRefresh: Bool) async throws -> ClaudeCredentials {
         if !forceRefresh, let cached = cache.load() {
             let currentDate = sourceModifiedDate()
             // Use the cache while Claude Code's item hasn't changed since we

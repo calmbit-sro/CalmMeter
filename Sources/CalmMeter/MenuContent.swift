@@ -69,10 +69,14 @@ struct MenuContent: View {
             }
 
             if let err = store.lastError {
-                Text(Localized.error(err))
-                    .font(.system(size: 11))
-                    .foregroundStyle(store.usage == nil ? .red : .secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                if store.usage == nil && (err == .notLoggedIn || err == .signedOut) {
+                    signInPrompt(err)
+                } else {
+                    Text(Localized.error(err))
+                        .font(.system(size: 11))
+                        .foregroundStyle(store.usage == nil ? .red : .secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
 
             if let release = updates.available {
@@ -98,6 +102,35 @@ struct MenuContent: View {
             // Opening the panel always tries to bring data up to date (and
             // recovers immediately if a transient error is showing).
             Task { await store.refreshIfStale() }
+        }
+    }
+
+    /// Empty state for "no credentials anywhere" / "sign-in died": explain and
+    /// offer the fix instead of a bare error caption.
+    private func signInPrompt(_ err: UsageErrorKind) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(
+                Localized.string(err == .signedOut ? "empty.signed_out.body" : "empty.not_logged_in.body"),
+                systemImage: "person.crop.circle.badge.exclamationmark"
+            )
+            .font(.system(size: 11))
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+
+            Button {
+                openWindow(id: "signin")
+                NSApp.activate(ignoringOtherApps: true)
+            } label: {
+                Text("signin.button")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+
+            Text("signin.claude_code_hint")
+                .font(.system(size: 10))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

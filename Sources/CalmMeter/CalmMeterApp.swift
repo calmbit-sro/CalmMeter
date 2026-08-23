@@ -5,13 +5,20 @@ import CalmMeterCore
 /// the same polling state.
 @MainActor
 enum AppEnvironment {
+    /// One shared OAuth provider for the poller AND the sign-in UI — the
+    /// single-flight refresh and adopt() propagation depend on this being the
+    /// same actor instance.
+    static let oauthProvider = OAuthCredentialProvider()
+
     static let store: UsageStore = {
         SettingsKey.registerDefaults()
         let interval = UserDefaults.standard.double(forKey: SettingsKey.refreshInterval)
-        return UsageStore(interval: interval > 0 ? interval : 60)
+        let client = UsageClient(provider: AutoCredentialProvider(oauth: oauthProvider))
+        return UsageStore(client: client, interval: interval > 0 ? interval : 60)
     }()
 
     static let updates = UpdateStore()
+    static let auth = AuthStore(oauth: oauthProvider)
 }
 
 @MainActor
@@ -41,6 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         AppEnvironment.store.start()
         AppEnvironment.updates.start()
+        Task { @MainActor in await AppEnvironment.auth.loadCurrentAccount() }
     }
 }
 
@@ -58,7 +66,7 @@ struct CalmMeterApp: App {
         } label: {
             BarLabel(
                 usage: store.usage,
-                hasError: store.lastError != nil,
+                error: store.lastError,
                 mode: BarDisplayMode(rawValue: barModeRaw) ?? .dotAndFiveHour,
                 rules: UserDefaults.standard.colorRules
             )
@@ -66,7 +74,17 @@ struct CalmMeterApp: App {
         .menuBarExtraStyle(.window)
 
         Window("Předvolby", id: "preferences") {
-            PreferencesView().environmentObject(store)
+            PreferencesView()
+                .environmentObject(store)
+                .environmentObject(AppEnvironment.auth)
+        }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
+
+        Window("signin.window_title", id: "signin") {
+            SignInView()
+                .environmentObject(store)
+                .environmentObject(AppEnvironment.auth)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)

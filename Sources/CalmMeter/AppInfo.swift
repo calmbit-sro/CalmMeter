@@ -50,10 +50,22 @@ enum Localized {
         switch kind {
         case .offline:      return string("error.offline")
         case .notLoggedIn:  return string("error.not_logged_in")
+        case .signedOut:    return string("error.signed_out")
         case .unauthorized: return string("error.unauthorized")
+        case .credentialsUnreadable: return string("error.credentials_unreadable")
         case .rateLimited:  return string("error.rate_limited")
         case .server(let c): return string("error.server", c)
         case .unknown:      return string("error.unknown")
+        }
+    }
+
+    /// Sign-in window errors (OAuth flow), shown inline under the paste field.
+    static func signInError(_ error: Error) -> String {
+        switch error {
+        case OAuthError.malformedCode:  return string("signin.error.malformed")
+        case OAuthError.stateMismatch:  return string("signin.error.state_mismatch")
+        case OAuthError.offline:        return string("signin.error.offline")
+        default:                        return string("signin.error.failed")
         }
     }
 }

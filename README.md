@@ -14,9 +14,11 @@ A [CalmBit](https://calmbit.cz) app.
 ## Requirements
 
 - **macOS 13** (Ventura) or newer.
-- **Claude Code** installed and logged in on this Mac. CalmMeter reads the OAuth
-  token Claude Code stores in your login keychain — if you've never signed in,
-  run `claude` once first.
+- A **Claude account** (Pro/Max subscription). Claude Code is **not** required:
+  - If you use **Claude Code** on this Mac, CalmMeter picks up its login
+    automatically — zero setup.
+  - Otherwise, click **Sign in with Claude** in the app and approve in the
+    browser (see "Signing in" below).
 - To **build from source:** the Swift toolchain (Xcode or the Command Line Tools —
   `xcode-select --install`).
 
@@ -42,17 +44,32 @@ open ./CalmMeter.app
 ./scripts/build-app.sh --install
 ```
 
-### First launch — keychain prompt
+### Signing in (no Claude Code needed)
 
-The first time it runs, macOS may show a keychain dialog asking for access to
-**`Claude Code-credentials`**. Click **Allow**. CalmMeter then copies the token
-into its **own** keychain item (`com.calmbit.CalmMeter.credentials`) and reads
-from there afterwards, so it won't keep prompting on every launch — it only goes
-back to Claude Code's item when the token stops working (roughly once per token
-rotation).
+If you don't use Claude Code on this Mac, the menu panel shows **Sign in with
+Claude**:
 
-Nothing is sent anywhere except a request to the Anthropic API asking for *your
-own* usage — the same call `/usage` makes. No analytics, no third parties.
+1. Click it — your browser opens claude.ai's authorization page.
+2. Approve access and copy the code the page shows (a `CODE#STATE` string).
+3. Paste it back into CalmMeter's sign-in window.
+
+CalmMeter stores the resulting credentials in its own keychain item
+(`com.calmbit.CalmMeter.oauth`) and keeps them fresh by itself. **Sign out** is
+in Preferences → Account.
+
+### First launch with Claude Code — keychain prompt
+
+If you *do* use Claude Code and don't sign in explicitly, CalmMeter reads the
+token Claude Code stores in your login keychain. On first run macOS may show a
+keychain dialog asking for access to **`Claude Code-credentials`** — click
+**Allow**. CalmMeter then copies the token into its **own** keychain item
+(`com.calmbit.CalmMeter.credentials`) and reads from there afterwards, so it
+won't keep prompting on every launch — it only goes back to Claude Code's item
+when the token stops working (roughly once per token rotation).
+
+Nothing is sent anywhere except requests to Anthropic (your *own* usage, and —
+only when you use the explicit sign-in — the OAuth token endpoint). No
+analytics, no third parties.
 
 ## Using it
 
@@ -127,13 +144,15 @@ the colours / fill in that script and re-run it to regenerate.
 
 ## How it works
 
-- Reads the OAuth token from the login keychain (service `Claude Code-credentials`),
-  then caches it in its own item so it doesn't re-prompt on every launch (see
-  "First launch" above).
+- Two credential sources, in priority order:
+  1. **Your own sign-in** (if you used *Sign in with Claude*): CalmMeter holds
+     its own OAuth credentials in `com.calmbit.CalmMeter.oauth` and refreshes
+     the access token itself shortly before it expires.
+  2. **Claude Code's token** (zero-config fallback): read from the login
+     keychain (service `Claude Code-credentials`) and cached in CalmMeter's own
+     item so it doesn't re-prompt on every launch. Claude Code keeps this token
+     fresh; on a 401 CalmMeter re-reads the item once.
 - Calls `GET https://api.anthropic.com/api/oauth/usage` with the bearer token.
-- It does **not** refresh the token itself — Claude Code keeps it fresh. On a 401
-  it re-reads Claude Code's item once; if that still fails it shows a
-  "run `claude`" hint.
 - On errors it backs off (honouring `Retry-After` for HTTP 429) and keeps showing
   the last known values instead of hammering the server.
 

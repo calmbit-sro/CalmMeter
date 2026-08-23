@@ -22,10 +22,37 @@
 /* Errors */
 "error.offline" = "Offline";
 "error.not_logged_in" = "Not logged in — run `claude`";
+"error.signed_out" = "Signed out — sign in again";
 "error.unauthorized" = "Session expired — run `claude`";
+"error.credentials_unreadable" = "Couldn't read stored credentials";
 "error.rate_limited" = "Too many requests — retrying soon";
 "error.server" = "Server error (HTTP %ld)";
 "error.unknown" = "Something went wrong";
+
+/* Sign-in */
+"signin.window_title" = "Sign in with Claude";
+"signin.explainer" = "Sign in with your Claude account to show your usage. No Claude Code installation needed.";
+"signin.open_browser" = "Open claude.ai to sign in";
+"signin.paste_caption" = "After approving, copy the code shown and paste it here:";
+"signin.paste_placeholder" = "Paste code (CODE#STATE)";
+"signin.confirm" = "Sign in";
+"signin.done" = "Done";
+"signin.success" = "Signed in as %@";
+"signin.error.malformed" = "That doesn't look like a complete code — copy the whole string.";
+"signin.error.state_mismatch" = "The code doesn't match this sign-in attempt — start over from step 1.";
+"signin.error.failed" = "Sign-in failed — try again.";
+"signin.error.offline" = "Offline — check your connection and try again.";
+"signin.button" = "Sign in with Claude";
+"signin.claude_code_hint" = "Using Claude Code? No setup needed — CalmMeter finds its login automatically.";
+"empty.not_logged_in.body" = "No Claude credentials found on this Mac.";
+"empty.signed_out.body" = "You've been signed out.";
+
+/* Account (Preferences) */
+"Account" = "Account";
+"account.signed_in_as" = "Signed in as";
+"account.sign_out" = "Sign out";
+"account.sign_in" = "Sign in…";
+"account.fallback_hint" = "Not signed in — using Claude Code's login when available.";
 
 /* Menu-bar display modes */
 "barmode.dot_5h" = "Dot + 5h %";

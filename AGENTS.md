@@ -4,14 +4,14 @@
 
 ## Project
 
-`CalmMeter` is a macOS menu-bar app that shows Claude Code usage — the same data as the `/usage` command (5-hour / weekly rate-limit windows, reset countdowns, per-model breakdown) — read via the OAuth token Claude Code stores in the login keychain. A CalmBit app.
+`CalmMeter` is a macOS menu-bar app that shows Claude usage — the same data as Claude Code's `/usage` command (5-hour / weekly rate-limit windows, reset countdowns, per-model breakdown) — via its own OAuth sign-in, or zero-config via the token Claude Code stores in the login keychain. A CalmBit app.
 **Stack**: Swift 5.9, pure SwiftPM (no Xcode project), SwiftUI `MenuBarExtra`, macOS 13+. **Runtime**: native macOS menu-bar agent, distributed as a signed + notarized DMG (bundle id `com.calmbit.CalmMeter`).
 
 ## Reading order for new agents
 
 1. **This file** (you're here).
-2. [`docs/adr/`](docs/adr/) — the *why* of the architecture (`/adr-new`; none written yet).
-3. [`docs/sessions/`](docs/sessions/) — the last 1–3 session logs (`/session-log`; none yet).
+2. [`docs/adr/`](docs/adr/) — the *why* of the architecture (`/adr-new`).
+3. [`docs/sessions/`](docs/sessions/) — the last 1–3 session logs (`/session-log`).
 4. The code — start at `Sources/CalmMeter/CalmMeterApp.swift` and follow imports into `CalmMeterCore`; don't read directories alphabetically.
 
 ## Repo layout
@@ -50,7 +50,11 @@ New logic goes in Core with tests; the app target should stay thin.
 
 ### Credential flow (the load-bearing part — don't simplify it away)
 
-`CachedCredentialProvider` (CredentialCache.swift) exists because of two macOS/API quirks:
+Two sources, routed per call by `AutoCredentialProvider` (own-OAuth first, Claude Code keychain as zero-config fallback — see ADR-0001):
+
+**A. Own OAuth sign-in** (since 1.1.0, for users without Claude Code): CalmMeter runs Claude Code's public OAuth flow itself (`ClaudeOAuth.swift`, PKCE + manual `CODE#STATE` paste) and self-refreshes via `OAuthCredentialProvider` (actor: 5-min expiry margin, single-flight refresh, `invalidGrant` → signed-out). Credentials live in CalmMeter's own item `com.calmbit.CalmMeter.oauth`. Invariant: a rotated refresh token is persisted before the new access token is first used.
+
+**B. Claude Code keychain** — `CachedCredentialProvider` (CredentialCache.swift) exists because of two macOS/API quirks:
 
 1. Reading the secret *data* of Claude Code's keychain item (`Claude Code-credentials`) via SecItem triggers a password prompt — and no grant survives, because Claude Code rewrites the item with `security add-generic-password -U` on every token rotation, which resets the item's partition list to `("apple-tool:")` and revokes any "Always Allow" (proven live 2026-08-16). So the secret is read by spawning `/usr/bin/security find-generic-password -w` (`Keychain.readSecretViaSecurityTool`): the `security` binary is itself partition `apple-tool:`, so that read never prompts — precisely *because* Claude Code keeps resetting the list to that value. The token is then cached in CalmMeter's own item (`com.calmbit.CalmMeter.credentials`) so polls don't spawn a subprocess.
 2. A rotated (stale) token is rejected by the API as **429, not 401**, so auth failures can't drive cache refresh. Instead, every call does an attribute-only query (which does NOT prompt) for the source item's modification date and re-reads the token data only when it changed.
