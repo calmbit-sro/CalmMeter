@@ -52,7 +52,7 @@ New logic goes in Core with tests; the app target should stay thin.
 
 Two sources, routed per call by `AutoCredentialProvider` (own-OAuth first, Claude Code keychain as zero-config fallback — see ADR-0001):
 
-**A. Own OAuth sign-in** (since 1.1.0, for users without Claude Code): CalmMeter runs Claude Code's public OAuth flow itself (`ClaudeOAuth.swift`, PKCE + manual `CODE#STATE` paste) and self-refreshes via `OAuthCredentialProvider` (actor: 5-min expiry margin, single-flight refresh, `invalidGrant` → signed-out). Credentials live in CalmMeter's own item `com.calmbit.CalmMeter.oauth`. Invariant: a rotated refresh token is persisted before the new access token is first used.
+**A. Own OAuth sign-in** (since 2.0.0, for users without Claude Code): CalmMeter runs Claude Code's public OAuth flow itself (`ClaudeOAuth.swift`, PKCE + manual `CODE#STATE` paste) and self-refreshes via `OAuthCredentialProvider` (actor: 5-min expiry margin, single-flight refresh, `invalidGrant` → signed-out). Credentials live in CalmMeter's own item `com.calmbit.CalmMeter.oauth`. Invariant: a rotated refresh token is persisted before the new access token is first used.
 
 **B. Claude Code keychain** — `CachedCredentialProvider` (CredentialCache.swift) exists because of two macOS/API quirks:
 
