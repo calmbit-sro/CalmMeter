@@ -81,10 +81,28 @@ public struct UpdateChecker: Sendable {
     }
 
     /// The newest release when it is strictly newer than `currentVersion`, else nil.
+    /// The silent form used by the daily background check — failures and
+    /// "already current" intentionally look the same (nothing to show).
     public func check(currentVersion: String) async -> ReleaseInfo? {
-        guard let current = AppVersion(currentVersion) else { return nil }
-        guard let data = try? await fetchData(),
-              let release = try? Self.decode(data) else { return nil }
-        return release.version > current ? release : nil
+        if case .updateAvailable(let release) = await checkDetailed(currentVersion: currentVersion) {
+            return release
+        }
+        return nil
     }
+
+    /// The distinguishing form for the manual "Check now" UI: up-to-date and
+    /// failure are different answers there.
+    public func checkDetailed(currentVersion: String) async -> UpdateCheckResult {
+        guard let current = AppVersion(currentVersion) else { return .failed }
+        guard let data = try? await fetchData(),
+              let release = try? Self.decode(data) else { return .failed }
+        return release.version > current ? .updateAvailable(release) : .upToDate
+    }
+}
+
+/// Outcome of a manual update check.
+public enum UpdateCheckResult: Equatable, Sendable {
+    case updateAvailable(ReleaseInfo)
+    case upToDate
+    case failed
 }

@@ -7,6 +7,15 @@ import CalmMeterCore
 @MainActor
 final class UpdateStore: ObservableObject {
     @Published private(set) var available: ReleaseInfo?
+    /// Outcome of the last manual "Check now"; nil = never asked / result
+    /// superseded. `available` stays the single source for "there IS an update".
+    @Published private(set) var manualStatus: ManualStatus?
+
+    enum ManualStatus: Equatable {
+        case checking
+        case upToDate
+        case failed
+    }
 
     private let checker = UpdateChecker()
     private var started = false
@@ -23,6 +32,24 @@ final class UpdateStore: ObservableObject {
                 }
                 try? await Task.sleep(for: .seconds(86_400))
             }
+        }
+    }
+
+    /// User-initiated check: runs regardless of the automatic-check toggle and
+    /// reports all three outcomes. Clearing `available` on `.upToDate` covers
+    /// "updated since the menu row appeared".
+    func checkNow() async {
+        guard manualStatus != .checking else { return }
+        manualStatus = .checking
+        switch await checker.checkDetailed(currentVersion: AppInfo.shortVersion) {
+        case .updateAvailable(let release):
+            available = release
+            manualStatus = nil
+        case .upToDate:
+            available = nil
+            manualStatus = .upToDate
+        case .failed:
+            manualStatus = .failed
         }
     }
 }

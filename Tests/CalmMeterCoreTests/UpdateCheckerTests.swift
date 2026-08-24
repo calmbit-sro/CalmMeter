@@ -80,3 +80,53 @@ final class UpdateCheckerTests: XCTestCase {
         XCTAssertNil(release)
     }
 }
+
+/// `checkDetailed` distinguishes what the silent `check()` collapses into nil:
+/// up-to-date vs failure. The manual "Check now" UI needs all three outcomes.
+final class UpdateCheckDetailedTests: XCTestCase {
+    private func fixtureData() throws -> Data {
+        let url = try XCTUnwrap(
+            Bundle.module.url(forResource: "github_release_sample", withExtension: "json", subdirectory: "Fixtures")
+        )
+        return try Data(contentsOf: url)
+    }
+
+    func testReportsUpdateAvailableWhenRemoteIsNewer() async throws {
+        let data = try fixtureData()
+        let checker = UpdateChecker(fetchData: { data })
+        let result = await checker.checkDetailed(currentVersion: "1.0.4")
+        guard case .updateAvailable(let release) = result else {
+            return XCTFail("expected updateAvailable, got \(result)")
+        }
+        XCTAssertEqual(release.tagName, "v1.0.5")
+    }
+
+    func testReportsUpToDateWhenCurrentMatchesOrIsAhead() async throws {
+        let data = try fixtureData()
+        let checker = UpdateChecker(fetchData: { data })
+        let same = await checker.checkDetailed(currentVersion: "1.0.5")
+        XCTAssertEqual(same, .upToDate)
+        let ahead = await checker.checkDetailed(currentVersion: "1.1.0")
+        XCTAssertEqual(ahead, .upToDate)
+    }
+
+    func testReportsFailedOnFetchError() async {
+        struct Boom: Error {}
+        let checker = UpdateChecker(fetchData: { throw Boom() })
+        let result = await checker.checkDetailed(currentVersion: "1.0.4")
+        XCTAssertEqual(result, .failed)
+    }
+
+    func testReportsFailedOnGarbageResponse() async {
+        let checker = UpdateChecker(fetchData: { Data("not json".utf8) })
+        let result = await checker.checkDetailed(currentVersion: "1.0.4")
+        XCTAssertEqual(result, .failed)
+    }
+
+    func testReportsFailedOnUnparseableCurrentVersion() async throws {
+        let data = try fixtureData()
+        let checker = UpdateChecker(fetchData: { data })
+        let result = await checker.checkDetailed(currentVersion: "garbage")
+        XCTAssertEqual(result, .failed)
+    }
+}

@@ -78,6 +78,7 @@ struct CalmMeterApp: App {
             PreferencesView()
                 .environmentObject(store)
                 .environmentObject(AppEnvironment.auth)
+                .environmentObject(AppEnvironment.updates)
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)

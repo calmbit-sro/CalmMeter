@@ -100,3 +100,8 @@
 "welcome.step3.body" = "Everything else — bar format, refresh interval, colour thresholds — lives in";
 "welcome.done" = "Done";
 "welcome.show_again" = "Show welcome guide…";
+
+/* Manual update check */
+"update.check_now" = "Check now";
+"update.up_to_date" = "You're up to date (%@)";
+"update.check_failed" = "Couldn't check — try again later";

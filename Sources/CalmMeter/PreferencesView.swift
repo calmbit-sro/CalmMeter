@@ -4,6 +4,7 @@ import CalmMeterCore
 struct PreferencesView: View {
     @EnvironmentObject var store: UsageStore
     @EnvironmentObject var auth: AuthStore
+    @EnvironmentObject var updates: UpdateStore
     @Environment(\.openWindow) private var openWindow
 
     @AppStorage(SettingsKey.barDisplayMode) private var barModeRaw = BarDisplayMode.dotAndFiveHour.rawValue
@@ -52,6 +53,14 @@ struct PreferencesView: View {
 
             Section("Updates") {
                 Toggle("Check for updates automatically", isOn: $checkForUpdates)
+                HStack {
+                    Button("update.check_now") {
+                        Task { await updates.checkNow() }
+                    }
+                    .disabled(updates.manualStatus == .checking)
+                    Spacer()
+                    manualCheckStatus
+                }
             }
 
             Section("Account") {
@@ -88,6 +97,36 @@ struct PreferencesView: View {
         .onAppear {
             // Reconcile the toggle with the actual system state on open.
             launchAtLogin = LoginItem.isEnabled
+        }
+    }
+
+    /// Inline outcome of the manual check. A found update wins over the last
+    /// manual status — the row doubles as the download link.
+    @ViewBuilder private var manualCheckStatus: some View {
+        if let release = updates.available {
+            Button {
+                NSWorkspace.shared.open(release.url)
+            } label: {
+                Label(
+                    Localized.string("update.available", release.version.description),
+                    systemImage: "arrow.down.circle"
+                )
+            }
+            .buttonStyle(.link)
+            .font(.caption)
+        } else {
+            switch updates.manualStatus {
+            case .checking:
+                ProgressView().controlSize(.small)
+            case .upToDate:
+                Label(Localized.string("update.up_to_date", AppInfo.shortVersion), systemImage: "checkmark.circle")
+                    .font(.caption).foregroundStyle(.secondary)
+            case .failed:
+                Label("update.check_failed", systemImage: "exclamationmark.triangle")
+                    .font(.caption).foregroundStyle(.secondary)
+            case nil:
+                EmptyView()
+            }
         }
     }
 }

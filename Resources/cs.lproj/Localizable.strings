@@ -100,3 +100,8 @@
 "welcome.step3.body" = "Vše ostatní — formát v menu baru, interval obnovy, barevné prahy — najdeš v";
 "welcome.done" = "Hotovo";
 "welcome.show_again" = "Zobrazit průvodce…";
+
+/* Ruční kontrola aktualizací */
+"update.check_now" = "Zkontrolovat teď";
+"update.up_to_date" = "Máš aktuální verzi (%@)";
+"update.check_failed" = "Kontrola se nezdařila — zkus to později";
