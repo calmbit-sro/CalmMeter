@@ -36,7 +36,7 @@ struct SignInView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 8) {
-                stepBadge(1)
+                StepBadge(1)
                 Button {
                     let fresh = PKCE()
                     pkce = fresh
@@ -48,7 +48,7 @@ struct SignInView: View {
             }
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                stepBadge(2)
+                StepBadge(2)
                 VStack(alignment: .leading, spacing: 6) {
                     Text("signin.paste_caption")
                         .font(.system(size: 12))
@@ -91,13 +91,6 @@ struct SignInView: View {
                 .keyboardShortcut(.defaultAction)
         }
         .frame(maxWidth: .infinity)
-    }
-
-    private func stepBadge(_ n: Int) -> some View {
-        Text("\(n)")
-            .font(.system(size: 11, weight: .bold))
-            .frame(width: 18, height: 18)
-            .background(Circle().fill(Color.accentColor.opacity(0.2)))
     }
 
     private func submit() {

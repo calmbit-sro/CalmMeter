@@ -76,6 +76,10 @@ struct PreferencesView: View {
             Section("About") {
                 LabeledContent("Version", value: AppInfo.versionString)
                 Link("GitHub", destination: AppInfo.repoURL)
+                Button("welcome.show_again") {
+                    openWindow(id: "welcome")
+                    NSApp.activate(ignoringOtherApps: true)
+                }
             }
         }
         .formStyle(.grouped)

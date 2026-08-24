@@ -29,6 +29,8 @@ enum SettingsKey {
     static let greenMax = "colorGreenMax"
     static let orangeMax = "colorOrangeMax"
     static let checkForUpdates = "checkForUpdates"
+    /// First-run guide already shown automatically (it stays reachable from Preferences).
+    static let welcomeShown = "welcomeShown"
 
     static func registerDefaults() {
         UserDefaults.standard.register(defaults: [
@@ -39,6 +41,7 @@ enum SettingsKey {
             greenMax: 60.0,
             orangeMax: 85.0,
             checkForUpdates: true,
+            welcomeShown: false,
         ])
     }
 }

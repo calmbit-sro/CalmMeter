@@ -80,3 +80,23 @@
 
 /* Update check */
 "update.available" = "New version %@ — download";
+
+/* Welcome guide (first launch) */
+"welcome.window_title" = "Welcome to CalmMeter";
+"welcome.title" = "Welcome to CalmMeter";
+"welcome.subtitle" = "Three things to know, then you're set.";
+"welcome.step1.title" = "Find it in the menu bar";
+"welcome.step1.body" = "CalmMeter lives in your menu bar, top right. The number is how much of your current 5-hour window you've used; click it for the weekly window, reset countdowns and per-model details.";
+"welcome.step1.preview_caption" = "Right now it shows:";
+"welcome.step2.title" = "Connect to Claude";
+"welcome.step2.checking" = "Looking for a Claude login on this Mac…";
+"welcome.step2.claude_code" = "Connected — using your Claude Code login. Nothing to set up.";
+"welcome.step2.signed_in" = "Signed in with your Claude account.";
+"welcome.step2.needs_sign_in" = "No Claude login found on this Mac. Sign in with your Claude account — it takes a minute.";
+"welcome.step2.or_claude_code" = "Or install Claude Code and run `claude` — CalmMeter picks up its login automatically.";
+"welcome.retry" = "Retry";
+"welcome.step3.title" = "Launch at login";
+"welcome.launch_at_login" = "Start CalmMeter when you log in";
+"welcome.step3.body" = "Everything else — bar format, refresh interval, colour thresholds — lives in";
+"welcome.done" = "Done";
+"welcome.show_again" = "Show welcome guide…";

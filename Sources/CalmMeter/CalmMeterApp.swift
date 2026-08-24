@@ -70,6 +70,7 @@ struct CalmMeterApp: App {
                 mode: BarDisplayMode(rawValue: barModeRaw) ?? .dotAndFiveHour,
                 rules: UserDefaults.standard.colorRules
             )
+            .modifier(FirstLaunchWelcome())
         }
         .menuBarExtraStyle(.window)
 
@@ -88,5 +89,31 @@ struct CalmMeterApp: App {
         }
         .windowResizability(.contentSize)
         .defaultPosition(.center)
+
+        Window("welcome.window_title", id: "welcome") {
+            WelcomeView()
+                .environmentObject(store)
+                .environmentObject(AppEnvironment.auth)
+        }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
+    }
+}
+
+/// Opens the welcome guide the first time the app runs. Hangs off the
+/// MenuBarExtra label because that is the only view guaranteed to exist at
+/// launch (there is no main window), and `openWindow` is a view-environment
+/// action the AppDelegate can't reach.
+private struct FirstLaunchWelcome: ViewModifier {
+    @Environment(\.openWindow) private var openWindow
+
+    func body(content: Content) -> some View {
+        content.task {
+            let defaults = UserDefaults.standard
+            guard !defaults.bool(forKey: SettingsKey.welcomeShown) else { return }
+            defaults.set(true, forKey: SettingsKey.welcomeShown)
+            openWindow(id: "welcome")
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 }

@@ -80,3 +80,23 @@
 
 /* Update check */
 "update.available" = "Nová verze %@ — stáhnout";
+
+/* Průvodce prvním spuštěním */
+"welcome.window_title" = "Vítej v CalmMeter";
+"welcome.title" = "Vítej v CalmMeter";
+"welcome.subtitle" = "Tři věci, které stačí vědět.";
+"welcome.step1.title" = "Najdeš mě v menu baru";
+"welcome.step1.body" = "CalmMeter žije v menu baru vpravo nahoře. Číslo ukazuje, kolik z aktuálního 5hodinového okna jsi vyčerpal; kliknutím zobrazíš týdenní okno, odpočty do resetu a rozpad podle modelů.";
+"welcome.step1.preview_caption" = "Teď zrovna ukazuje:";
+"welcome.step2.title" = "Připojení ke Claude";
+"welcome.step2.checking" = "Hledám přihlášení ke Claude na tomto Macu…";
+"welcome.step2.claude_code" = "Připojeno — používá se přihlášení Claude Code. Není potřeba nic nastavovat.";
+"welcome.step2.signed_in" = "Přihlášeno tvým Claude účtem.";
+"welcome.step2.needs_sign_in" = "Na tomto Macu není žádné přihlášení ke Claude. Přihlas se svým Claude účtem — zabere to minutu.";
+"welcome.step2.or_claude_code" = "Nebo nainstaluj Claude Code a spusť `claude` — CalmMeter si jeho přihlášení najde sám.";
+"welcome.retry" = "Zkusit znovu";
+"welcome.step3.title" = "Spouštění po přihlášení";
+"welcome.launch_at_login" = "Spouštět CalmMeter po přihlášení k Macu";
+"welcome.step3.body" = "Vše ostatní — formát v menu baru, interval obnovy, barevné prahy — najdeš v";
+"welcome.done" = "Hotovo";
+"welcome.show_again" = "Zobrazit průvodce…";
